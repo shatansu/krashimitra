@@ -17,6 +17,7 @@ frontend/.env.local
 .tmp/
 .uv-cache/
 .uv-python/
+test.py
 
 # OS / editor
 .DS_Store
