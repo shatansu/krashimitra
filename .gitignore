@@ -1,0 +1,23 @@
+# Python
+backend/.venv/
+backend/.venv_uv/
+backend/__pycache__/
+backend/**/*.pyc
+backend/audit_logs/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Env files
+backend/.env
+frontend/.env.local
+
+# Local tooling
+.tmp/
+.uv-cache/
+.uv-python/
+
+# OS / editor
+.DS_Store
+Thumbs.db
