@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import VoiceInput from "./components/VoiceInput";
 import ImageUpload from "./components/ImageUpload";
 import SoilForm from "./components/SoilForm";
@@ -8,66 +8,101 @@ import { useKrishiAgent } from "./hooks/useKrishiAgent";
 import "./App.css";
 
 const MODES = [
-  { id: "voice", label: "आवाज़ से पूछें", labelEn: "Voice Query" },
-  { id: "image", label: "फ़ोटो भेजें", labelEn: "Crop Photo" },
+  { id: "voice", label: "आवाज से पूछें", labelEn: "Voice Query" },
+  { id: "image", label: "फोटो भेजें", labelEn: "Crop Photo" },
   { id: "soil", label: "मिट्टी जांच", labelEn: "Soil Analysis" },
-  { id: "market", label: "बाज़ार भाव", labelEn: "Market Price" },
+  { id: "market", label: "बाजार भाव", labelEn: "Market Price" },
 ];
+
+function cleanLocationPart(value) {
+  return (value || "").replace(/\s+/g, " ").trim();
+}
+
+function isTooGranularLocation(value) {
+  return /(tehsil|tahsil|taluk|taluka|subdivision|sub-division|block)/i.test(value || "");
+}
+
+function formatDetectedLocation(address = {}) {
+  const candidates = [
+    address.city,
+    address.town,
+    address.village,
+    address.municipality,
+    address.hamlet,
+    address.suburb,
+    address.city_district,
+    address.state_district,
+    address.county,
+  ]
+    .map(cleanLocationPart)
+    .filter(Boolean);
+
+  const locality = candidates.find((item) => !isTooGranularLocation(item)) || candidates[0] || "";
+  const state = cleanLocationPart(address.state);
+
+  if (locality && state && locality.toLowerCase() !== state.toLowerCase()) {
+    return `${locality}, ${state}`;
+  }
+
+  return state || locality || "India";
+}
 
 export default function App() {
   const [mode, setMode] = useState("voice");
   const [language, setLanguage] = useState("hi");
   const [location, setLocation] = useState("Rewa, Madhya Pradesh");
-  const [locationStatus, setLocationStatus] = useState("detecting"); // detecting | found | manual | denied
+  const [locationStatus, setLocationStatus] = useState("detecting");
   const [cropType, setCropType] = useState("");
   const [showAudit, setShowAudit] = useState(false);
   const { loading, result, error, submit, reset } = useKrishiAgent();
 
-  // ── AUTO LOCATION DETECT ON LOAD ──────────────────────────
   useEffect(() => {
     detectLocation();
   }, []);
 
-  const detectLocation = () => {
+  function detectLocation() {
     setLocationStatus("detecting");
+
     if (!navigator.geolocation) {
       setLocationStatus("manual");
       return;
     }
+
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
+      async (position) => {
+        const { latitude, longitude } = position.coords;
         try {
-          // Reverse geocode using OpenStreetMap (free, no key needed)
-          const res = await fetch(
+          const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
             { headers: { "Accept-Language": "en" } }
           );
-          const data = await res.json();
-          const addr = data.address || {};
-          // Build location string: District, State
-          const district = addr.county || addr.city_district || addr.city || addr.town || addr.village || "";
-          const state = addr.state || "";
-          const locStr = district && state ? `${district}, ${state}` : (state || "India");
-          setLocation(locStr);
+          const data = await response.json();
+          setLocation(formatDetectedLocation(data.address || {}));
           setLocationStatus("found");
         } catch {
-          // Fallback: use lat/lon directly
           setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
           setLocationStatus("found");
         }
       },
-      (err) => {
-        // User denied or error
+      () => {
         setLocationStatus("denied");
       },
       { timeout: 8000, enableHighAccuracy: false }
     );
-  };
+  }
 
-  const handleVoiceSubmit = (transcript, imageFile, soilData) => {
+  function handleVoiceSubmit(transcript, imageFile, soilData) {
     submit({ query: transcript, language, location, cropType, imageFile, soilData });
-  };
+  }
+
+  const locationHint =
+    locationStatus === "detecting"
+      ? "Detecting location"
+      : locationStatus === "found"
+        ? "Detected location"
+        : locationStatus === "denied"
+          ? "Location access denied"
+          : "Manual location";
 
   return (
     <div className="app">
@@ -81,39 +116,49 @@ export default function App() {
             </div>
           </div>
         </div>
+
         <div className="header-right">
           <div className="location-bar">
             <span className="location-icon">
-              {locationStatus === "detecting" ? "⏳" :
-               locationStatus === "found" ? "📍" :
-               locationStatus === "denied" ? "📍" : "📍"}
+              {locationStatus === "detecting" ? "⏳" : "📍"}
             </span>
-            <input
-              className="location-input"
-              value={locationStatus === "detecting" ? "पता लगा रहे हैं..." : location}
-              onChange={(e) => { setLocation(e.target.value); setLocationStatus("manual"); }}
-              placeholder="Location"
-              title="अपना स्थान बदलने के लिए यहाँ लिखें"
-            />
-            {locationStatus === "denied" && (
-              <button
-                className="retry-loc-btn"
-                onClick={detectLocation}
-                title="फिर से location detect करें"
-              >↻</button>
-            )}
+
+            <div className="location-field-wrap">
+              <input
+                className="location-input"
+                value={location}
+                onChange={(event) => {
+                  setLocation(event.target.value);
+                  setLocationStatus("manual");
+                }}
+                placeholder={language === "hi" ? "जिला, राज्य लिखें" : "Enter district, state"}
+                title="Click here and type any location manually"
+              />
+              <span className="location-meta">{locationHint}</span>
+            </div>
+
+            <button
+              type="button"
+              className="retry-loc-btn"
+              onClick={detectLocation}
+              title={language === "hi" ? "फिर से मेरी लोकेशन detect करें" : "Detect my location again"}
+            >
+              ↻
+            </button>
           </div>
+
           <select
             className="lang-toggle"
             value={language}
-            onChange={(e) => setLanguage(e.target.value)}
+            onChange={(event) => setLanguage(event.target.value)}
           >
             <option value="hi">हिंदी</option>
             <option value="en">English</option>
           </select>
+
           <div className="crop-select">
-            <select value={cropType} onChange={(e) => setCropType(e.target.value)}>
-              <option value="">फसल चुनें</option>
+            <select value={cropType} onChange={(event) => setCropType(event.target.value)}>
+              <option value="">{language === "hi" ? "फसल चुनें" : "Select crop"}</option>
               <option value="wheat">गेहूं (Wheat)</option>
               <option value="soybean">सोयाबीन</option>
               <option value="rice">धान (Rice)</option>
@@ -125,24 +170,31 @@ export default function App() {
         </div>
       </header>
 
-      {/* Location denied banner */}
       {locationStatus === "denied" && (
         <div className="loc-denied-banner">
-          📍 Location access denied —
-          <strong> browser settings mein allow karo</strong> ya neeche manually likhो।
-          <button onClick={detectLocation} className="loc-retry-link">Retry</button>
+          <span>
+            {language === "hi"
+              ? "Location access deny ho gaya. Aap manually location type kar sakte hain."
+              : "Location access was denied. You can type any location manually."}
+          </span>
+          <button type="button" onClick={detectLocation} className="loc-retry-link">
+            {language === "hi" ? "Retry" : "Retry"}
+          </button>
         </div>
       )}
 
       <nav className="mode-nav">
-        {MODES.map((m) => (
+        {MODES.map((item) => (
           <button
-            key={m.id}
-            className={`mode-btn ${mode === m.id ? "active" : ""}`}
-            onClick={() => { setMode(m.id); reset(); }}
+            key={item.id}
+            className={`mode-btn ${mode === item.id ? "active" : ""}`}
+            onClick={() => {
+              setMode(item.id);
+              reset();
+            }}
           >
-            <span className="mode-label-hi">{m.label}</span>
-            <span className="mode-label-en">{m.labelEn}</span>
+            <span className="mode-label-hi">{item.label}</span>
+            <span className="mode-label-en">{item.labelEn}</span>
           </button>
         ))}
       </nav>
@@ -152,10 +204,11 @@ export default function App() {
           {mode === "voice" && (
             <VoiceInput
               language={language}
-              onSubmit={(t) => handleVoiceSubmit(t, null, null)}
+              onSubmit={(text) => handleVoiceSubmit(text, null, null)}
               loading={loading}
             />
           )}
+
           {mode === "image" && (
             <ImageUpload
               language={language}
@@ -165,6 +218,7 @@ export default function App() {
               loading={loading}
             />
           )}
+
           {mode === "soil" && (
             <SoilForm
               cropType={cropType}
@@ -173,21 +227,29 @@ export default function App() {
               loading={loading}
             />
           )}
+
           {mode === "market" && (
             <div className="market-input">
               <h3>{language === "hi" ? "कौन सी फसल का भाव देखें?" : "Which crop price?"}</h3>
               <p className="market-location-note">
-                📍 {location} ke mandi bhav
+                📍 {language === "hi" ? `${location} के मंडी भाव` : `Mandi prices for ${location}`}
               </p>
               <div className="market-crop-grid">
                 {["गेहूं", "सोयाबीन", "धान", "चना", "सरसों", "मक्का"].map((crop) => (
                   <button
                     key={crop}
                     className="crop-price-btn"
-                    onClick={() => submit({
-                      query: `${crop} का आज का मंडी भाव बताओ और बेचने या रखने की सलाह दो। मेरी लोकेशन ${location} है।`,
-                      language, location, cropType: crop
-                    })}
+                    onClick={() =>
+                      submit({
+                        query:
+                          language === "hi"
+                            ? `${crop} का आज का मंडी भाव बताओ और बेचने या रखने की सलाह दो। मेरी लोकेशन ${location} है।`
+                            : `Tell me today's mandi price for ${crop} and whether I should sell or hold. My location is ${location}.`,
+                        language,
+                        location,
+                        cropType: crop,
+                      })
+                    }
                   >
                     {crop}
                   </button>
@@ -208,9 +270,15 @@ export default function App() {
             {loading && (
               <div className="loading-state">
                 <div className="loading-steps">
-                  <div className="loading-step active">📡 {location} का डेटा इकट्ठा हो रहा है...</div>
-                  <div className="loading-step">🌿 विश्लेषण हो रहा है...</div>
-                  <div className="loading-step">✅ जांच पड़ताल हो रही है...</div>
+                  <div className="loading-step active">
+                    📡 {language === "hi" ? `${location} का डेटा इकट्ठा हो रहा है...` : `Collecting data for ${location}...`}
+                  </div>
+                  <div className="loading-step">
+                    🌿 {language === "hi" ? "विश्लेषण हो रहा है..." : "Analyzing..."}
+                  </div>
+                  <div className="loading-step">
+                    ✅ {language === "hi" ? "जांच हो रही है..." : "Running compliance checks..."}
+                  </div>
                 </div>
               </div>
             )}
@@ -218,18 +286,15 @@ export default function App() {
             {result && !loading && (
               <>
                 <Advisory result={result} language={language} />
+
                 <div className="audit-section">
-                  <button
-                    className="audit-toggle-btn"
-                    onClick={() => setShowAudit(!showAudit)}
-                  >
+                  <button className="audit-toggle-btn" onClick={() => setShowAudit(!showAudit)}>
                     {showAudit ? "▲" : "▼"}{" "}
-                    {language === "hi" ? "निर्णय का लेखा-जोखा देखें" : "View Decision Audit Trail"}
+                    {language === "hi" ? "निर्णय का लेखा-जोखा देखें" : "View decision audit trail"}
                     <span className="audit-count">{result.audit_trail?.length || 0} steps</span>
                   </button>
-                  {showAudit && (
-                    <AuditTrail trail={result.audit_trail} language={language} />
-                  )}
+
+                  {showAudit && <AuditTrail trail={result.audit_trail} language={language} />}
                 </div>
               </>
             )}
@@ -239,9 +304,9 @@ export default function App() {
 
       <footer className="app-footer">
         <p>
-          KrishiMitra — {language === "hi"
-            ? "CIB&RC, ICAR और NPOP दिशानिर्देशों के अनुसार | किसान हेल्पलाइन: 1800-180-1551"
-            : "Compliant with CIB&RC, ICAR & NPOP guidelines | Kisan Helpline: 1800-180-1551"}
+          {language === "hi"
+            ? "KrishiMitra - CIB&RC, ICAR aur NPOP guidelines ke anusar | Kisan Helpline: 1800-180-1551"
+            : "KrishiMitra - Compliant with CIB&RC, ICAR and NPOP guidelines | Kisan Helpline: 1800-180-1551"}
         </p>
       </footer>
     </div>

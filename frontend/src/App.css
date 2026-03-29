@@ -65,16 +65,26 @@ body {
 }
 
 .location-bar {
-  display: flex; align-items: center; gap: 4px;
+  display: flex; align-items: center; gap: 8px;
   background: rgba(255,255,255,0.12); border-radius: var(--radius-sm);
   padding: 4px 8px;
 }
 .location-icon { font-size: 13px; }
+.location-field-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+}
 .location-input {
   background: transparent; border: none; color: #fff; font-size: 13px;
-  width: 160px; outline: none;
+  width: 100%; outline: none;
 }
 .location-input::placeholder { color: rgba(255,255,255,0.6); }
+.location-meta {
+  font-size: 10px;
+  line-height: 1.2;
+  color: rgba(255,255,255,0.72);
+}
 
 .lang-toggle, .crop-select select {
   background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
@@ -501,7 +511,7 @@ body {
 @media (max-width: 600px) {
   .app-header { padding: 10px 14px; }
   .header-right { gap: 6px; }
-  .location-input { width: 110px; }
+  .location-field-wrap { min-width: 160px; }
   .main-content { padding: 12px; }
   .audit-stats { grid-template-columns: repeat(2, 1fr); }
   .market-crop-grid { grid-template-columns: repeat(2, 1fr); }
@@ -510,13 +520,16 @@ body {
 
 /* ===== AUTO LOCATION ===== */
 .retry-loc-btn {
-  background: transparent; border: none; color: rgba(255,255,255,0.8);
-  cursor: pointer; font-size: 16px; padding: 0 4px; line-height: 1;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.9);
+  cursor: pointer; font-size: 14px; padding: 4px 8px; line-height: 1;
+  border-radius: 999px;
 }
 .loc-denied-banner {
   background: var(--amber-50); border-bottom: 1px solid var(--amber-100);
   padding: 8px 20px; font-size: 13px; color: var(--amber-600);
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
 .loc-retry-link {
   background: transparent; border: none; color: var(--amber-600);
