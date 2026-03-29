@@ -507,3 +507,43 @@ body {
   .market-crop-grid { grid-template-columns: repeat(2, 1fr); }
   .quick-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== AUTO LOCATION ===== */
+.retry-loc-btn {
+  background: transparent; border: none; color: rgba(255,255,255,0.8);
+  cursor: pointer; font-size: 16px; padding: 0 4px; line-height: 1;
+}
+.loc-denied-banner {
+  background: var(--amber-50); border-bottom: 1px solid var(--amber-100);
+  padding: 8px 20px; font-size: 13px; color: var(--amber-600);
+  display: flex; align-items: center; gap: 8px;
+}
+.loc-retry-link {
+  background: transparent; border: none; color: var(--amber-600);
+  font-weight: 600; cursor: pointer; text-decoration: underline;
+  font-size: 13px; padding: 0;
+}
+.market-location-note {
+  font-size: 13px; color: var(--gray-600); margin: -8px 0 10px;
+}
+
+/* ===== IMAGE VALIDATION ===== */
+.image-warning {
+  background: var(--amber-50); border: 1px solid var(--amber-100);
+  border-radius: var(--radius-sm); padding: 8px 12px;
+  font-size: 13px; color: var(--amber-600); margin-bottom: 10px;
+}
+.validation-error {
+  background: var(--red-50); border: 1px solid #f7c1c1;
+  border-radius: var(--radius-sm); padding: 8px 12px;
+  font-size: 13px; color: var(--red-600); margin-top: 6px;
+}
+.drop-zone.validating {
+  border-color: var(--amber-400); background: var(--amber-50);
+  cursor: wait;
+}
+.preview-badge {
+  position: absolute; bottom: 8px; left: 8px;
+  background: rgba(59,109,17,0.85); color: #fff;
+  font-size: 12px; padding: 3px 10px; border-radius: 10px;
+}
