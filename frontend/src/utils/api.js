@@ -28,6 +28,20 @@ export async function submitQuery({ query, language, location, cropType, soilDat
   return handleResponse(res);
 }
 
+export async function supportChat({ messages, language, location, cropType }) {
+  const res = await fetch(buildUrl("/api/support/chat"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messages,
+      language,
+      location,
+      crop_type: cropType || "",
+    }),
+  });
+  return handleResponse(res);
+}
+
 export async function inspectImage({ imageFile, language, cropType }) {
   const formData = new FormData();
   formData.append("image", imageFile);

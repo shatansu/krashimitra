@@ -609,3 +609,229 @@ body {
   font-size: 14px;
   background: #fff;
 }
+
+/* ===== GEMINI ASSISTANT ===== */
+.gemini-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1d9e75, #27500a);
+  color: #fff;
+  padding: 12px 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+}
+
+.gemini-fab-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.gemini-fab-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.gemini-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 78px;
+  z-index: 49;
+  width: min(380px, calc(100vw - 24px));
+  height: min(560px, calc(100vh - 120px));
+  background: #fff;
+  border: 1px solid #dfe7d5;
+  border-radius: 16px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gemini-panel-header {
+  padding: 14px 16px;
+  background: linear-gradient(180deg, var(--green-50), #f8fbf4);
+  border-bottom: 1px solid #e6eedc;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gemini-panel-header h3 {
+  font-size: 16px;
+  color: var(--green-800);
+}
+
+.gemini-panel-header p {
+  font-size: 12px;
+  color: var(--gray-600);
+  margin-top: 4px;
+}
+
+.gemini-clear-btn {
+  align-self: flex-start;
+  border: 1px solid #d6dfca;
+  background: #fff;
+  color: var(--green-800);
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.gemini-messages {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  background: #fafaf7;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gemini-message {
+  max-width: 88%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gemini-message-user {
+  align-self: flex-end;
+}
+
+.gemini-message-assistant {
+  align-self: flex-start;
+}
+
+.gemini-message-content {
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.gemini-message-user .gemini-message-content {
+  background: var(--green-600);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.gemini-message-assistant .gemini-message-content,
+.gemini-message-assistant {
+  background: transparent;
+}
+
+.gemini-message-assistant .gemini-message-content {
+  background: #fff;
+  border: 1px solid #e3e1d7;
+  color: #2c2c2a;
+  border-bottom-left-radius: 4px;
+}
+
+.gemini-speak-btn {
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: var(--teal-600);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 4px;
+}
+
+.gemini-speak-btn:disabled {
+  color: var(--gray-200);
+  cursor: not-allowed;
+}
+
+.gemini-input-wrap {
+  border-top: 1px solid #e6e3d9;
+  padding: 12px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gemini-textarea {
+  width: 100%;
+  resize: none;
+  border: 1px solid #d6d4cc;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  background: #fafaf7;
+  outline: none;
+}
+
+.gemini-textarea:focus {
+  border-color: var(--green-400);
+  background: #fff;
+}
+
+.gemini-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gemini-voice-btn,
+.gemini-send-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.gemini-voice-btn {
+  background: var(--teal-50);
+  color: var(--teal-600);
+}
+
+.gemini-send-btn {
+  background: var(--green-600);
+  color: #fff;
+  margin-left: auto;
+}
+
+.gemini-voice-btn:disabled,
+.gemini-send-btn:disabled {
+  background: var(--gray-50);
+  color: var(--gray-200);
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .gemini-fab {
+    right: 12px;
+    bottom: 12px;
+    padding: 12px;
+  }
+
+  .gemini-fab-label {
+    display: none;
+  }
+
+  .gemini-panel {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    bottom: 72px;
+    height: min(68vh, 560px);
+  }
+}

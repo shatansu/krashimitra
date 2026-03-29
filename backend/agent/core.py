@@ -463,6 +463,104 @@ class KrishiAgent:
             "confidence_score": confidence_score,
         }
 
+    async def support_chat(
+        self,
+        messages: list[dict[str, str]],
+        language: str = "hi",
+        location: str = "Rewa, Madhya Pradesh",
+        crop_type: str | None = None,
+    ) -> str:
+        cleaned_messages = [
+            {
+                "role": "assistant" if message.get("role") == "assistant" else "user",
+                "content": str(message.get("content", "")).strip(),
+            }
+            for message in messages
+            if str(message.get("content", "")).strip()
+        ]
+
+        if not cleaned_messages:
+            return "कृपया अपना सवाल लिखें।" if language == "hi" else "Please enter your question."
+
+        if self.client is None:
+            return (
+                "अभी AI support उपलब्ध नहीं है। कृपया थोड़ी देर बाद फिर कोशिश करें।"
+                if language == "hi"
+                else "AI support is not available right now. Please try again shortly."
+            )
+
+        support_prompt = self._build_support_prompt(
+            messages=cleaned_messages[-12:],
+            language=language,
+            location=location,
+            crop_type=crop_type,
+        )
+
+        model = self.client.GenerativeModel(
+            model_name=self.model_name,
+            system_instruction=(
+                "You are KrishiMitra AI support assistant. Help the farmer conversationally. "
+                "Respond in plain text only. Never return JSON, code blocks, markdown fences, or schema text. "
+                "Keep answers practical, easy to understand, and focused on the user's question."
+            ),
+            generation_config={"max_output_tokens": 1200},
+        )
+
+        response = model.generate_content(support_prompt)
+        raw_text = (response.text or "").strip()
+        return self._sanitize_support_reply(raw_text, language)
+
+    def _build_support_prompt(
+        self,
+        messages: list[dict[str, str]],
+        language: str,
+        location: str,
+        crop_type: str | None,
+    ) -> str:
+        history_lines: list[str] = []
+        for message in messages:
+            role_label = "Assistant" if message["role"] == "assistant" else "User"
+            history_lines.append(f"{role_label}: {message['content']}")
+
+        language_line = (
+            f"Reply in {language}. If language code is hi, reply in natural Hindi script. "
+            "If the selected language is not English, do not switch to English unless the user explicitly asks."
+        )
+        crop_line = crop_type or "not specified"
+        history_text = "\n".join(history_lines)
+
+        return (
+            "Farmer support chat context:\n"
+            f"Location: {location}\n"
+            f"Crop: {crop_line}\n"
+            f"{language_line}\n"
+            "Conversation so far:\n"
+            f"{history_text}\n\n"
+            "Now reply to the latest user message in a warm, helpful, conversational style. "
+            "Do not output JSON. Do not wrap the answer in code fences."
+        )
+
+    def _sanitize_support_reply(self, text: str, language: str) -> str:
+        cleaned = (text or "").strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.replace("```json", "").replace("```", "").strip()
+
+        parsed = self._parse_json_response(cleaned)
+        if parsed:
+            cleaned = (
+                parsed.get("reply")
+                or parsed.get("advisory")
+                or parsed.get("message")
+                or cleaned
+            )
+
+        if not cleaned:
+            return (
+                "अभी साफ जवाब नहीं मिल पाया। कृपया अपना सवाल दोबारा पूछें।"
+                if language == "hi"
+                else "I could not generate a clear answer just now. Please ask again."
+            )
+        return cleaned.strip()
     def _build_image_rejection_response(
         self,
         session_id: str,
@@ -569,6 +667,10 @@ class KrishiAgent:
         if "zaid" in query_lower:
             return "zaid"
         return "rabi"
+
+
+
+
 
 
 

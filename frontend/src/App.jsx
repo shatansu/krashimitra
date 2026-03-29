@@ -4,6 +4,7 @@ import ImageUpload from "./components/ImageUpload";
 import SoilForm from "./components/SoilForm";
 import Advisory from "./components/Advisory";
 import AuditTrail from "./components/AuditTrail";
+import GeminiAssistant from "./components/GeminiAssistant";
 import { useKrishiAgent } from "./hooks/useKrishiAgent";
 import { LANGUAGE_OPTIONS, cropLabel, cropOptions, t } from "./utils/i18n";
 import "./App.css";
@@ -273,6 +274,8 @@ export default function App() {
       <footer className="app-footer">
         <p>{t(language, "footer")}</p>
       </footer>
+
+      <GeminiAssistant language={language} location={location} cropType={cropType} />
     </div>
   );
 }

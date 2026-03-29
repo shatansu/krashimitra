@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import base64
 import uuid
@@ -26,6 +26,18 @@ class TextQueryRequest(BaseModel):
     session_id: str | None = None
 
 
+class SupportChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class SupportChatRequest(BaseModel):
+    messages: list[SupportChatMessage]
+    language: str = "hi"
+    location: str | None = None
+    crop_type: str | None = None
+
+
 class AdvisoryResponse(BaseModel):
     session_id: str
     advisory: str
@@ -40,6 +52,10 @@ class AdvisoryResponse(BaseModel):
     confidence_score: float
     action_steps: list[str] = []
     image_analysis: dict[str, Any] | None = None
+
+
+class SupportChatResponse(BaseModel):
+    reply: str
 
 
 app = FastAPI(title="KrishiMitra API", version="1.2.0")
@@ -102,6 +118,25 @@ async def get_advisory(request: TextQueryRequest) -> dict[str, Any]:
     except Exception as exc:
         audit_logger.log_error(session_id, str(exc))
         raise HTTPException(status_code=500, detail="Unable to generate advisory.") from exc
+
+
+@app.post("/api/support/chat", response_model=SupportChatResponse)
+async def support_chat(request: SupportChatRequest) -> dict[str, str]:
+    if not request.messages:
+        raise HTTPException(status_code=400, detail="Messages are required.")
+
+    try:
+        reply = await agent.support_chat(
+            messages=[message.model_dump() for message in request.messages],
+            language=request.language,
+            location=request.location or "Rewa, Madhya Pradesh",
+            crop_type=request.crop_type,
+        )
+        return {"reply": reply}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Unable to generate support reply: {exc}") from exc
 
 
 @app.post("/api/image/inspect")
