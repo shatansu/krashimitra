@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import ComplianceBadge from "./ComplianceBadge";
 
 export default function Advisory({ result, language }) {
@@ -24,16 +24,15 @@ export default function Advisory({ result, language }) {
   const confidenceColor = confidence_score > 0.75
     ? "var(--color-text-success)"
     : confidence_score > 0.5
-    ? "var(--color-text-warning)"
-    : "var(--color-text-danger)";
+      ? "var(--color-text-warning)"
+      : "var(--color-text-danger)";
 
   return (
     <div className="advisory-card">
-      {/* Header row */}
       <div className="advisory-header">
         <div className="advisory-title">
-          <span className="advisory-icon">🌾</span>
-          <h2>{language === "hi" ? "सलाह" : "Advisory"}</h2>
+          <span className="advisory-icon">Advice</span>
+          <h2>{language === "hi" ? "Salah" : "Advisory"}</h2>
         </div>
         <div className="advisory-meta">
           <ComplianceBadge status={compliance_status} />
@@ -41,31 +40,24 @@ export default function Advisory({ result, language }) {
             {Math.round(confidence_score * 100)}% confident
           </div>
           {advisory_hindi && (
-            <button
-              className="lang-switch-btn"
-              onClick={() => setShowHindi(!showHindi)}
-            >
-              {showHindi ? "EN" : "हि"}
+            <button className="lang-switch-btn" onClick={() => setShowHindi(!showHindi)}>
+              {showHindi ? "EN" : "HI"}
             </button>
           )}
         </div>
       </div>
 
-      {/* Compliance flags - ALWAYS shown first if blocked */}
       {compliance_status === "BLOCKED" && (
         <div className="compliance-block">
           <div className="compliance-block-header">
-            <span>🚫</span>
-            <strong>{language === "hi" ? "सलाह अवरुद्ध — नियम उल्लंघन" : "Advisory Blocked — Compliance Violation"}</strong>
+            <strong>{language === "hi" ? "Salah blocked - compliance violation" : "Advisory blocked - Compliance Violation"}</strong>
           </div>
           {compliance_flags.map((flag, i) => (
-            <div key={i} className="compliance-flag blocked">
-              {flag}
-            </div>
+            <div key={i} className="compliance-flag blocked">{flag}</div>
           ))}
           {safe_alternatives?.length > 0 && (
             <div className="alternatives-section">
-              <strong>{language === "hi" ? "✅ सुरक्षित विकल्प:" : "✅ Safe alternatives:"}</strong>
+              <strong>{language === "hi" ? "Safe alternatives:" : "Safe alternatives:"}</strong>
               {safe_alternatives.map((alt, i) => (
                 <div key={i} className="alternative-item">{alt}</div>
               ))}
@@ -76,24 +68,19 @@ export default function Advisory({ result, language }) {
 
       {compliance_status === "WARNING" && compliance_flags.length > 0 && (
         <div className="compliance-warning">
-          <span>⚠️</span>
           {compliance_flags.map((flag, i) => (
             <div key={i} className="compliance-flag warning">{flag}</div>
           ))}
         </div>
       )}
 
-      {/* Main advisory text */}
       <div className="advisory-body">
-        <p className={`advisory-text ${showHindi ? "hindi-text" : ""}`}>
-          {displayText}
-        </p>
+        <p className={`advisory-text ${showHindi ? "hindi-text" : ""}`}>{displayText}</p>
       </div>
 
-      {/* Action steps */}
       {action_steps && action_steps.length > 0 && (
         <div className="action-steps">
-          <h3>{language === "hi" ? "क्या करें?" : "Action steps"}</h3>
+          <h3>{language === "hi" ? "Kya karein?" : "Action steps"}</h3>
           <ol className="steps-list">
             {action_steps.map((step, i) => (
               <li key={i} className="step-item">{step}</li>
@@ -102,48 +89,33 @@ export default function Advisory({ result, language }) {
         </div>
       )}
 
-      {/* Market signal */}
       {market_signal && (
         <div className={`market-signal signal-${market_signal.signal}`}>
           <div className="signal-header">
-            <span className="signal-icon">
-              {market_signal.signal === "sell_now" ? "📈" :
-               market_signal.signal === "hold" ? "⏳" :
-               market_signal.signal === "sell_partial" ? "📊" : "👁️"}
-            </span>
             <strong className="signal-label">
-              {market_signal.signal === "sell_now" && (language === "hi" ? "अभी बेचें" : "Sell Now")}
-              {market_signal.signal === "hold" && (language === "hi" ? "रोक कर रखें" : "Hold")}
-              {market_signal.signal === "sell_partial" && (language === "hi" ? "आधा बेचें" : "Sell Partial")}
-              {market_signal.signal === "monitor" && (language === "hi" ? "नज़र रखें" : "Monitor")}
+              {market_signal.signal === "sell_now" && (language === "hi" ? "Abhi bechein" : "Sell Now")}
+              {market_signal.signal === "hold" && (language === "hi" ? "Rok kar rakhein" : "Hold")}
+              {market_signal.signal === "sell_partial" && (language === "hi" ? "Aadha bechein" : "Sell Partial")}
+              {market_signal.signal === "monitor" && (language === "hi" ? "Nazar rakhein" : "Monitor")}
             </strong>
-            <span className="signal-trend">
-              {market_signal.trend === "rising" ? "↑" :
-               market_signal.trend === "falling" ? "↓" : "→"}
-              {market_signal.trend}
-            </span>
+            <span className="signal-trend">{market_signal.trend}</span>
           </div>
           <p className="signal-reason">{market_signal.reason}</p>
           {market_signal.below_msp && (
             <div className="msp-warning">
-              ⚠️ {language === "hi" ? "MSP से कम — PM-KISAN Samridhi से सहायता लें" : "Below MSP — contact NABARD/PM-KISAN Samridhi"}
+              {language === "hi" ? "MSP se kam - support ke liye sambandhit yojana dekhein" : "Below MSP - check support schemes"}
             </div>
           )}
         </div>
       )}
 
-      {/* Government schemes */}
       {scheme_eligibility && scheme_eligibility.length > 0 && (
         <div className="schemes-section">
-          <button
-            className="schemes-toggle"
-            onClick={() => setExpandSchemes(!expandSchemes)}
-          >
-            🏛️ {language === "hi"
-              ? `${scheme_eligibility.length} सरकारी योजनाओं के लिए पात्र हैं`
-              : `Eligible for ${scheme_eligibility.length} government schemes`
-            }
-            {expandSchemes ? " ▲" : " ▼"}
+          <button className="schemes-toggle" onClick={() => setExpandSchemes(!expandSchemes)}>
+            {language === "hi"
+              ? `${scheme_eligibility.length} sarkari yojanaon ke liye patra`
+              : `Eligible for ${scheme_eligibility.length} government schemes`}
+            {expandSchemes ? " Hide" : " Show"}
           </button>
           {expandSchemes && (
             <div className="schemes-list">
@@ -151,11 +123,7 @@ export default function Advisory({ result, language }) {
                 <div key={i} className="scheme-item">
                   <strong>{scheme.scheme}</strong>
                   <p>{scheme.benefit}</p>
-                  {scheme.helpline && (
-                    <a href={`tel:${scheme.helpline}`} className="helpline-link">
-                      📞 {scheme.helpline}
-                    </a>
-                  )}
+                  {scheme.helpline && <a href={`tel:${scheme.helpline}`} className="helpline-link">Helpline: {scheme.helpline}</a>}
                 </div>
               ))}
             </div>
@@ -163,23 +131,16 @@ export default function Advisory({ result, language }) {
         </div>
       )}
 
-      {/* Data sources */}
       {data_sources && data_sources.length > 0 && (
         <div className="data-sources">
-          <span className="sources-label">
-            {language === "hi" ? "डेटा स्रोत:" : "Sources:"}
-          </span>
+          <span className="sources-label">{language === "hi" ? "Data sources:" : "Sources:"}</span>
           {data_sources.map((src, i) => (
-            <span key={i} className="source-chip">
-              {src.replace(/_/g, " ")}
-            </span>
+            <span key={i} className="source-chip">{src.replace(/_/g, " ")}</span>
           ))}
         </div>
       )}
 
-      <div className="session-id">
-        Session: {session_id?.slice(0, 8)}
-      </div>
+      <div className="session-id">Session: {session_id?.slice(0, 8)}</div>
     </div>
   );
 }

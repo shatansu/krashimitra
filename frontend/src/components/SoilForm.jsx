@@ -1,11 +1,11 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 
 const FIELD_LABELS = {
-  nitrogen: { hi: "नाइट्रोजन (N)", en: "Nitrogen (N)", unit: "kg/ha", low: 0, high: 600, typical: 280 },
-  phosphorus: { hi: "फास्फोरस (P)", en: "Phosphorus (P)", unit: "kg/ha", low: 0, high: 60, typical: 22 },
-  potassium: { hi: "पोटाश (K)", en: "Potassium (K)", unit: "kg/ha", low: 0, high: 500, typical: 200 },
-  ph: { hi: "मिट्टी का pH", en: "Soil pH", unit: "", low: 4, high: 10, typical: 7 },
-  organic_carbon: { hi: "जैविक कार्बन", en: "Organic carbon", unit: "%", low: 0, high: 3, step: 0.1, typical: 0.6 },
+  nitrogen: { hi: "Nitrogen (N)", en: "Nitrogen (N)", unit: "kg/ha", low: 0, high: 600, typical: 280 },
+  phosphorus: { hi: "Phosphorus (P)", en: "Phosphorus (P)", unit: "kg/ha", low: 0, high: 60, typical: 22 },
+  potassium: { hi: "Potash (K)", en: "Potassium (K)", unit: "kg/ha", low: 0, high: 500, typical: 200 },
+  ph: { hi: "Mitti ka pH", en: "Soil pH", unit: "", low: 4, high: 10, typical: 7 },
+  organic_carbon: { hi: "Jaivik carbon", en: "Organic carbon", unit: "%", low: 0, high: 3, step: 0.1, typical: 0.6 },
 };
 
 export default function SoilForm({ cropType, language, onSubmit, loading }) {
@@ -29,7 +29,7 @@ export default function SoilForm({ cropType, language, onSubmit, loading }) {
     });
 
     const query = language === "hi"
-      ? `मेरी मिट्टी जांच रिपोर्ट के अनुसार ${cropType || "फसल"} के लिए खाद और उर्वरक की सलाह दें। मिट्टी डेटा: N=${soilData.nitrogen || "?"}, P=${soilData.phosphorus || "?"}, K=${soilData.potassium || "?"}, pH=${soilData.ph || "?"}`
+      ? `Meri mitti jaanch report ke anusaar ${cropType || "fasal"} ke liye khaad aur urvarak ki salah dein. Mitti data: N=${soilData.nitrogen || "?"}, P=${soilData.phosphorus || "?"}, K=${soilData.potassium || "?"}, pH=${soilData.ph || "?"}`
       : `Based on my soil health card, give fertilizer recommendations for ${cropType || "my crop"}. Soil: N=${soilData.nitrogen}, P=${soilData.phosphorus}, K=${soilData.potassium}, pH=${soilData.ph}`;
 
     onSubmit(cleanData, query);
@@ -58,19 +58,19 @@ export default function SoilForm({ cropType, language, onSubmit, loading }) {
   };
 
   const statusLabel = {
-    low: { hi: "कम", en: "Low", color: "var(--color-text-danger)" },
-    medium: { hi: "मध्यम", en: "Medium", color: "var(--color-text-warning)" },
-    good: { hi: "अच्छा", en: "Good", color: "var(--color-text-success)" },
-    high: { hi: "अधिक", en: "High", color: "var(--color-text-warning)" },
+    low: { hi: "Kam", en: "Low", color: "var(--color-text-danger)" },
+    medium: { hi: "Madhyam", en: "Medium", color: "var(--color-text-warning)" },
+    good: { hi: "Achha", en: "Good", color: "var(--color-text-success)" },
+    high: { hi: "Adhik", en: "High", color: "var(--color-text-warning)" },
   };
 
   return (
     <div className="soil-form-container">
-      <h3>{language === "hi" ? "मिट्टी जांच कार्ड डेटा डालें" : "Enter soil health card data"}</h3>
+      <h3>{language === "hi" ? "Mitti jaanch card data daalein" : "Enter soil health card data"}</h3>
       <p className="soil-subtitle">
         {language === "hi"
-          ? "मिट्टी जांच कार्ड से नंबर देखकर भरें — खाली छोड़ सकते हैं"
-          : "Fill from your Soil Health Card — leave blank if unknown"}
+          ? "Mitti jaanch card se numbers dekhar bharein. Unknown ho to blank chhod sakte hain."
+          : "Fill from your Soil Health Card. Leave blank if unknown."}
       </p>
 
       <div className="soil-fields">
@@ -96,14 +96,13 @@ export default function SoilForm({ cropType, language, onSubmit, loading }) {
                   className="soil-input"
                   value={soilData[field]}
                   onChange={(e) => handleChange(field, e.target.value)}
-                  placeholder={`${language === "hi" ? "उदा." : "e.g."} ${meta.typical}`}
+                  placeholder={`${language === "hi" ? "Udaharan" : "e.g."} ${meta.typical}`}
                   min={meta.low}
                   max={meta.high}
                   step={meta.step || 1}
                 />
                 {meta.unit && <span className="soil-unit-label">{meta.unit}</span>}
               </div>
-              {/* Visual bar */}
               {soilData[field] && (
                 <div className="nutrient-bar">
                   <div
@@ -113,8 +112,8 @@ export default function SoilForm({ cropType, language, onSubmit, loading }) {
                       backgroundColor: status === "low"
                         ? "var(--color-background-danger)"
                         : status === "good"
-                        ? "var(--color-background-success)"
-                        : "var(--color-background-warning)",
+                          ? "var(--color-background-success)"
+                          : "var(--color-background-warning)",
                     }}
                   />
                 </div>
@@ -124,40 +123,34 @@ export default function SoilForm({ cropType, language, onSubmit, loading }) {
         })}
 
         <div className="soil-field">
-          <label className="soil-label">
-            {language === "hi" ? "मिट्टी का प्रकार" : "Soil type"}
-          </label>
+          <label className="soil-label">{language === "hi" ? "Mitti ka prakaar" : "Soil type"}</label>
           <select
             className="soil-input"
             value={soilData.soil_type}
             onChange={(e) => handleChange("soil_type", e.target.value)}
           >
-            <option value="black">{language === "hi" ? "काली (Black/Cotton soil)" : "Black (Cotton soil)"}</option>
-            <option value="red">{language === "hi" ? "लाल (Red soil)" : "Red soil"}</option>
-            <option value="alluvial">{language === "hi" ? "जलोढ़ (Alluvial)" : "Alluvial"}</option>
-            <option value="sandy">{language === "hi" ? "रेतीली (Sandy)" : "Sandy"}</option>
-            <option value="loamy">{language === "hi" ? "दोमट (Loamy)" : "Loamy"}</option>
+            <option value="black">Black (Cotton soil)</option>
+            <option value="red">Red soil</option>
+            <option value="alluvial">Alluvial</option>
+            <option value="sandy">Sandy</option>
+            <option value="loamy">Loamy</option>
           </select>
         </div>
       </div>
 
       <div className="shc-info">
-        <span>💡</span>
+        <span>Info</span>
         <p>
           {language === "hi"
-            ? "मिट्टी जांच कार्ड नहीं है? soilhealth.dac.gov.in पर मुफ़्त आवेदन करें"
-            : "No Soil Health Card? Apply free at soilhealth.dac.gov.in"}
+            ? "Soil Health Card nahi hai? soilhealth.dac.gov.in par apply karein."
+            : "No Soil Health Card? Apply at soilhealth.dac.gov.in"}
         </p>
       </div>
 
-      <button
-        className="submit-btn"
-        onClick={handleSubmit}
-        disabled={loading}
-      >
+      <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
         {loading
-          ? (language === "hi" ? "विश्लेषण हो रहा है..." : "Analyzing...")
-          : (language === "hi" ? "मिट्टी का विश्लेषण करें →" : "Analyze soil →")}
+          ? (language === "hi" ? "Vishleshan ho raha hai..." : "Analyzing...")
+          : (language === "hi" ? "Mitti ka vishleshan karein ->" : "Analyze soil ->")}
       </button>
     </div>
   );

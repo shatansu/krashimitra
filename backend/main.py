@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -39,9 +39,10 @@ class AdvisoryResponse(BaseModel):
     scheme_eligibility: list[dict[str, Any]]
     confidence_score: float
     action_steps: list[str] = []
+    image_analysis: dict[str, Any] | None = None
 
 
-app = FastAPI(title="KrishiMitra API", version="1.1.0")
+app = FastAPI(title="KrishiMitra API", version="1.2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -61,7 +62,7 @@ agent = KrishiAgent(audit_logger=audit_logger, compliance_engine=compliance_engi
 async def root() -> dict[str, str]:
     return {
         "message": "KrishiMitra API - Agricultural advisory backend",
-        "version": "1.1.0",
+        "version": "1.2.0",
     }
 
 
@@ -103,14 +104,30 @@ async def get_advisory(request: TextQueryRequest) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail="Unable to generate advisory.") from exc
 
 
+@app.post("/api/image/inspect")
+async def inspect_image(
+    image: UploadFile = File(...),
+    language: str = Form("hi"),
+    crop_type: str = Form(""),
+) -> dict[str, Any]:
+    image_bytes = await image.read()
+    image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+    return await agent.inspect_image(
+        image_b64=image_b64,
+        image_media_type=image.content_type or "image/jpeg",
+        language=language,
+        crop_hint=crop_type,
+    )
+
+
 @app.post("/api/advise/image", response_model=AdvisoryResponse)
 async def get_advisory_with_image(
     image: UploadFile = File(...),
-    query: str = "What issue do you see in this crop?",
-    location: str = "Rewa, Madhya Pradesh",
-    crop_type: str = "",
-    language: str = "hi",
-    session_id: str = "",
+    query: str = Form("What issue do you see in this crop?"),
+    location: str = Form("Rewa, Madhya Pradesh"),
+    crop_type: str = Form(""),
+    language: str = Form("hi"),
+    session_id: str = Form(""),
 ) -> dict[str, Any]:
     active_session_id = session_id or str(uuid.uuid4())
     image_bytes = await image.read()

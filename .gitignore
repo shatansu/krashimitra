@@ -22,3 +22,5 @@ test.py
 # OS / editor
 .DS_Store
 Thumbs.db
+
+tmp_test_image.png

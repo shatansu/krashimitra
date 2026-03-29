@@ -173,7 +173,7 @@ The compliance engine runs **6 checks** on every advisory before it reaches the 
 
 ## Tech Stack
 
-- **Backend**: Python 3.11, FastAPI, Anthropic Claude claude-opus-4-5 (with tool use)
+- **Backend**: Python 3.11, FastAPI,Gemini (with tool use)
 - **Frontend**: React 18, Vite, Web Speech API (voice)
 - **AI**: Claude claude-opus-4-5 with 6 custom tools, multi-modal (vision + text)
 - **Compliance**: Custom rule engine (no LLM dependency for guardrails)

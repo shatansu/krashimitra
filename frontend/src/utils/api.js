@@ -28,6 +28,19 @@ export async function submitQuery({ query, language, location, cropType, soilDat
   return handleResponse(res);
 }
 
+export async function inspectImage({ imageFile, language, cropType }) {
+  const formData = new FormData();
+  formData.append("image", imageFile);
+  formData.append("language", language);
+  formData.append("crop_type", cropType || "");
+
+  const res = await fetch(buildUrl("/api/image/inspect"), {
+    method: "POST",
+    body: formData,
+  });
+  return handleResponse(res);
+}
+
 export async function submitImageQuery({ imageFile, query, location, cropType, language }) {
   const formData = new FormData();
   formData.append("image", imageFile);

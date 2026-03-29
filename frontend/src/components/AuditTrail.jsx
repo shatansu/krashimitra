@@ -1,13 +1,13 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 
 const STEP_ICONS = {
-  agent_start: "📥",
-  llm_call: "🤖",
-  tool_call: "🔧",
-  tool_result: "📊",
-  compliance_check: "🛡️",
-  final_response: "✅",
-  error: "❌",
+  agent_start: "Start",
+  llm_call: "AI",
+  tool_call: "Tool",
+  tool_result: "Data",
+  compliance_check: "Check",
+  final_response: "Done",
+  error: "Error",
 };
 
 const STATUS_STYLES = {
@@ -42,8 +42,8 @@ function StepDetail({ data }) {
             {Array.isArray(value)
               ? value.map((v, i) => <div key={i} className="detail-list-item">{typeof v === "object" ? JSON.stringify(v) : String(v)}</div>)
               : typeof value === "object"
-              ? <pre className="detail-json">{JSON.stringify(value, null, 2)}</pre>
-              : String(value)}
+                ? <pre className="detail-json">{JSON.stringify(value, null, 2)}</pre>
+                : String(value)}
           </span>
         </div>
       ))}
@@ -51,13 +51,16 @@ function StepDetail({ data }) {
   );
 }
 
-function AuditStep({ step, index, language }) {
+function AuditStep({ step, index }) {
   const [expanded, setExpanded] = useState(false);
   const stepName = step.step || "";
 
-  let icon = "◆";
+  let icon = "Step";
   for (const [key, ico] of Object.entries(STEP_ICONS)) {
-    if (stepName.startsWith(key)) { icon = ico; break; }
+    if (stepName.startsWith(key)) {
+      icon = ico;
+      break;
+    }
   }
 
   const status = step.status || "success";
@@ -68,7 +71,6 @@ function AuditStep({ step, index, language }) {
     : "";
 
   const label = step.label || stepName.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
   const hasDetails = step.details && Object.keys(step.details).length > 0;
 
   return (
@@ -87,21 +89,14 @@ function AuditStep({ step, index, language }) {
           </div>
         </div>
         <div className="step-right">
-          <span
-            className="step-status-badge"
-            style={{ background: style.bg, color: style.text }}
-          >
+          <span className="step-status-badge" style={{ background: style.bg, color: style.text }}>
             {status}
           </span>
-          {hasDetails && (
-            <span className="expand-icon">{expanded ? "▲" : "▼"}</span>
-          )}
+          {hasDetails && <span className="expand-icon">{expanded ? "Hide" : "Show"}</span>}
         </div>
       </div>
 
-      {expanded && step.details && (
-        <StepDetail data={step.details} />
-      )}
+      {expanded && step.details && <StepDetail data={step.details} />}
     </div>
   );
 }
@@ -110,18 +105,14 @@ export default function AuditTrail({ trail, language }) {
   const [filter, setFilter] = useState("all");
 
   if (!trail || trail.length === 0) {
-    return (
-      <div className="audit-empty">
-        {language === "hi" ? "कोई ऑडिट डेटा उपलब्ध नहीं" : "No audit data available"}
-      </div>
-    );
+    return <div className="audit-empty">{language === "hi" ? "Koi audit data uplabdh nahi" : "No audit data available"}</div>;
   }
 
   const filters = [
-    { id: "all", label: language === "hi" ? "सभी" : "All" },
-    { id: "tool", label: language === "hi" ? "डेटा स्रोत" : "Data sources" },
-    { id: "compliance", label: language === "hi" ? "जांच" : "Compliance" },
-    { id: "llm", label: language === "hi" ? "AI सोच" : "AI reasoning" },
+    { id: "all", label: language === "hi" ? "Sabhi" : "All" },
+    { id: "tool", label: language === "hi" ? "Data sources" : "Data sources" },
+    { id: "compliance", label: language === "hi" ? "Compliance" : "Compliance" },
+    { id: "llm", label: language === "hi" ? "AI reasoning" : "AI reasoning" },
   ];
 
   const filteredTrail = trail.filter((step) => {
@@ -137,15 +128,14 @@ export default function AuditTrail({ trail, language }) {
 
   return (
     <div className="audit-trail">
-      {/* Summary stats */}
       <div className="audit-stats">
         <div className="audit-stat">
           <span className="stat-value">{trail.length}</span>
-          <span className="stat-label">{language === "hi" ? "कदम" : "Steps"}</span>
+          <span className="stat-label">{language === "hi" ? "Kadam" : "Steps"}</span>
         </div>
         <div className="audit-stat">
           <span className="stat-value">{toolCallCount}</span>
-          <span className="stat-label">{language === "hi" ? "डेटा स्रोत" : "Data sources"}</span>
+          <span className="stat-label">Data sources</span>
         </div>
         {complianceStep && (
           <div className="audit-stat">
@@ -157,20 +147,19 @@ export default function AuditTrail({ trail, language }) {
                   : "var(--color-text-danger)",
               }}
             >
-              {complianceStep.data?.status || "—"}
+              {complianceStep.data?.status || "-"}
             </span>
-            <span className="stat-label">{language === "hi" ? "अनुपालन" : "Compliance"}</span>
+            <span className="stat-label">Compliance</span>
           </div>
         )}
         {totalDuration !== null && (
           <div className="audit-stat">
             <span className="stat-value">{totalDuration.toFixed(1)}s</span>
-            <span className="stat-label">{language === "hi" ? "समय" : "Duration"}</span>
+            <span className="stat-label">Duration</span>
           </div>
         )}
       </div>
 
-      {/* Filter tabs */}
       <div className="audit-filters">
         {filters.map((f) => (
           <button
@@ -183,33 +172,24 @@ export default function AuditTrail({ trail, language }) {
         ))}
       </div>
 
-      {/* Compliance flags summary */}
       {complianceStep?.data?.flags?.length > 0 && (
         <div className="audit-compliance-summary">
-          <strong>
-            {language === "hi" ? "नियम जांच परिणाम:" : "Compliance check results:"}
-          </strong>
+          <strong>{language === "hi" ? "Compliance check results:" : "Compliance check results:"}</strong>
           {complianceStep.data.flags.map((flag, i) => (
             <div key={i} className="audit-flag">{flag}</div>
           ))}
         </div>
       )}
 
-      {/* Step list */}
       <div className="audit-steps-list">
         {filteredTrail.map((step, i) => (
-          <AuditStep
-            key={i}
-            step={step}
-            index={trail.indexOf(step)}
-            language={language}
-          />
+          <AuditStep key={i} step={step} index={trail.indexOf(step)} />
         ))}
       </div>
 
       <p className="audit-footer-note">
         {language === "hi"
-          ? "यह लेखा-जोखा नियामक जांच के लिए सुरक्षित रखा जाता है"
+          ? "Yeh audit trail regulatory inspection ke liye rakha jata hai"
           : "This audit trail is retained for regulatory inspection purposes"}
       </p>
     </div>

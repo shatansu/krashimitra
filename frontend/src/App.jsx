@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import VoiceInput from "./components/VoiceInput";
 import ImageUpload from "./components/ImageUpload";
 import SoilForm from "./components/SoilForm";
@@ -8,10 +8,10 @@ import { useKrishiAgent } from "./hooks/useKrishiAgent";
 import "./App.css";
 
 const MODES = [
-  { id: "voice", label: "आवाज से पूछें", labelEn: "Voice Query" },
-  { id: "image", label: "फोटो भेजें", labelEn: "Crop Photo" },
-  { id: "soil", label: "मिट्टी जांच", labelEn: "Soil Analysis" },
-  { id: "market", label: "बाजार भाव", labelEn: "Market Price" },
+  { id: "voice", label: "Aawaz se poochhein", labelEn: "Voice Query" },
+  { id: "image", label: "Photo bhejein", labelEn: "Crop Photo" },
+  { id: "soil", label: "Mitti jaanch", labelEn: "Soil Analysis" },
+  { id: "market", label: "Bazaar bhaav", labelEn: "Market Price" },
 ];
 
 function cleanLocationPart(value) {
@@ -109,19 +109,17 @@ export default function App() {
       <header className="app-header">
         <div className="header-left">
           <div className="logo">
-            <span className="logo-leaf">🌿</span>
+            <span className="logo-leaf">KM</span>
             <div>
               <h1>KrishiMitra</h1>
-              <p>कृषि सलाहकार AI</p>
+              <p>Krishi salahkar AI</p>
             </div>
           </div>
         </div>
 
         <div className="header-right">
           <div className="location-bar">
-            <span className="location-icon">
-              {locationStatus === "detecting" ? "⏳" : "📍"}
-            </span>
+            <span className="location-icon">{locationStatus === "detecting" ? "..." : "Loc"}</span>
 
             <div className="location-field-wrap">
               <input
@@ -131,7 +129,7 @@ export default function App() {
                   setLocation(event.target.value);
                   setLocationStatus("manual");
                 }}
-                placeholder={language === "hi" ? "जिला, राज्य लिखें" : "Enter district, state"}
+                placeholder={language === "hi" ? "Jila, rajya likhein" : "Enter district, state"}
                 title="Click here and type any location manually"
               />
               <span className="location-meta">{locationHint}</span>
@@ -141,9 +139,9 @@ export default function App() {
               type="button"
               className="retry-loc-btn"
               onClick={detectLocation}
-              title={language === "hi" ? "फिर से मेरी लोकेशन detect करें" : "Detect my location again"}
+              title={language === "hi" ? "Meri location dubara detect karein" : "Detect my location again"}
             >
-              ↻
+              R
             </button>
           </div>
 
@@ -152,19 +150,19 @@ export default function App() {
             value={language}
             onChange={(event) => setLanguage(event.target.value)}
           >
-            <option value="hi">हिंदी</option>
+            <option value="hi">Hindi</option>
             <option value="en">English</option>
           </select>
 
           <div className="crop-select">
             <select value={cropType} onChange={(event) => setCropType(event.target.value)}>
-              <option value="">{language === "hi" ? "फसल चुनें" : "Select crop"}</option>
-              <option value="wheat">गेहूं (Wheat)</option>
-              <option value="soybean">सोयाबीन</option>
-              <option value="rice">धान (Rice)</option>
-              <option value="gram">चना (Gram)</option>
-              <option value="mustard">सरसों</option>
-              <option value="maize">मक्का</option>
+              <option value="">{language === "hi" ? "Fasal chunein" : "Select crop"}</option>
+              <option value="wheat">Gehu (Wheat)</option>
+              <option value="soybean">Soyabean</option>
+              <option value="rice">Dhan (Rice)</option>
+              <option value="gram">Chana (Gram)</option>
+              <option value="mustard">Sarson</option>
+              <option value="maize">Makka</option>
             </select>
           </div>
         </div>
@@ -178,7 +176,7 @@ export default function App() {
               : "Location access was denied. You can type any location manually."}
           </span>
           <button type="button" onClick={detectLocation} className="loc-retry-link">
-            {language === "hi" ? "Retry" : "Retry"}
+            Retry
           </button>
         </div>
       )}
@@ -214,6 +212,8 @@ export default function App() {
               language={language}
               cropType={cropType}
               location={location}
+              onCropTypeChange={setCropType}
+              onResetResult={reset}
               onSubmit={(file, query) => submit({ query, language, location, cropType, imageFile: file })}
               loading={loading}
             />
@@ -230,12 +230,12 @@ export default function App() {
 
           {mode === "market" && (
             <div className="market-input">
-              <h3>{language === "hi" ? "कौन सी फसल का भाव देखें?" : "Which crop price?"}</h3>
+              <h3>{language === "hi" ? "Kaun si fasal ka bhaav dekhna hai?" : "Which crop price?"}</h3>
               <p className="market-location-note">
-                📍 {language === "hi" ? `${location} के मंडी भाव` : `Mandi prices for ${location}`}
+                {language === "hi" ? `${location} ke mandi bhaav` : `Mandi prices for ${location}`}
               </p>
               <div className="market-crop-grid">
-                {["गेहूं", "सोयाबीन", "धान", "चना", "सरसों", "मक्का"].map((crop) => (
+                {["Gehu", "Soyabean", "Dhan", "Chana", "Sarson", "Makka"].map((crop) => (
                   <button
                     key={crop}
                     className="crop-price-btn"
@@ -243,7 +243,7 @@ export default function App() {
                       submit({
                         query:
                           language === "hi"
-                            ? `${crop} का आज का मंडी भाव बताओ और बेचने या रखने की सलाह दो। मेरी लोकेशन ${location} है।`
+                            ? `${crop} ka aaj ka mandi bhaav batao aur bechne ya rakhne ki salah do. Meri location ${location} hai.`
                             : `Tell me today's mandi price for ${crop} and whether I should sell or hold. My location is ${location}.`,
                         language,
                         location,
@@ -261,7 +261,7 @@ export default function App() {
 
         {error && (
           <div className="error-banner">
-            <span>⚠️ {error}</span>
+            <span>Warning: {error}</span>
           </div>
         )}
 
@@ -271,13 +271,13 @@ export default function App() {
               <div className="loading-state">
                 <div className="loading-steps">
                   <div className="loading-step active">
-                    📡 {language === "hi" ? `${location} का डेटा इकट्ठा हो रहा है...` : `Collecting data for ${location}...`}
+                    {language === "hi" ? `${location} ka data ikattha ho raha hai...` : `Collecting data for ${location}...`}
                   </div>
                   <div className="loading-step">
-                    🌿 {language === "hi" ? "विश्लेषण हो रहा है..." : "Analyzing..."}
+                    {language === "hi" ? "Vishleshan ho raha hai..." : "Analyzing..."}
                   </div>
                   <div className="loading-step">
-                    ✅ {language === "hi" ? "जांच हो रही है..." : "Running compliance checks..."}
+                    {language === "hi" ? "Jaach ho rahi hai..." : "Running compliance checks..."}
                   </div>
                 </div>
               </div>
@@ -289,8 +289,7 @@ export default function App() {
 
                 <div className="audit-section">
                   <button className="audit-toggle-btn" onClick={() => setShowAudit(!showAudit)}>
-                    {showAudit ? "▲" : "▼"}{" "}
-                    {language === "hi" ? "निर्णय का लेखा-जोखा देखें" : "View decision audit trail"}
+                    {showAudit ? "Hide" : "Show"} {language === "hi" ? "decision audit trail" : "decision audit trail"}
                     <span className="audit-count">{result.audit_trail?.length || 0} steps</span>
                   </button>
 
@@ -305,8 +304,8 @@ export default function App() {
       <footer className="app-footer">
         <p>
           {language === "hi"
-            ? "KrishiMitra - CIB&RC, ICAR aur NPOP guidelines ke anusar | Kisan Helpline: 1800-180-1551"
-            : "KrishiMitra - Compliant with CIB&RC, ICAR and NPOP guidelines | Kisan Helpline: 1800-180-1551"}
+            ? "KrishiMitra - CIBRC, ICAR aur NPOP guidelines ke anusar | Kisan Helpline: 1800-180-1551"
+            : "KrishiMitra - Compliant with CIBRC, ICAR and NPOP guidelines | Kisan Helpline: 1800-180-1551"}
         </p>
       </footer>
     </div>

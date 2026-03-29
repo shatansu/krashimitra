@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 
 const EXAMPLE_QUERIES_HI = [
-  "मेरे गेहूं में पीले पत्ते आ रहे हैं, क्या करूँ?",
-  "सोयाबीन की फसल में कीड़े लग गए हैं",
-  "आज मंडी में चना का भाव क्या है?",
-  "धान की बुवाई का सही समय कब है?",
-  "मेरी मिट्टी का pH 8.2 है, क्या करूँ?",
+  "Mere gehu me peele patte aa rahe hain, kya karun?",
+  "Soyabean ki fasal me keede lag gaye hain.",
+  "Aaj mandi me chana ka bhaav kya hai?",
+  "Dhan ki buwai ka sahi samay kab hai?",
+  "Mitti ka pH 8.2 hai, kya karun?",
 ];
 
 export default function VoiceInput({ language, onSubmit, loading }) {
@@ -68,15 +68,12 @@ export default function VoiceInput({ language, onSubmit, loading }) {
   return (
     <div className="voice-input-container">
       <div className="voice-title">
-        <h3>{language === "hi" ? "अपनी समस्या बताएं" : "Ask your question"}</h3>
+        <h3>{language === "hi" ? "Apni samasya batayein" : "Ask your question"}</h3>
         <p className="voice-subtitle">
-          {language === "hi"
-            ? "बोलकर या लिखकर पूछें"
-            : "Speak or type your query"}
+          {language === "hi" ? "Bolkar ya likhkar poochhein" : "Speak or type your query"}
         </p>
       </div>
 
-      {/* Mic button */}
       {speechSupported && (
         <div className="mic-section">
           <button
@@ -84,49 +81,33 @@ export default function VoiceInput({ language, onSubmit, loading }) {
             onClick={isListening ? stopListening : startListening}
             disabled={loading}
           >
-            <div className={`mic-icon ${isListening ? "pulsing" : ""}`}>
-              {isListening ? "⏹" : "🎤"}
-            </div>
+            <div className={`mic-icon ${isListening ? "pulsing" : ""}`}>{isListening ? "Stop" : "Mic"}</div>
             <span>
               {isListening
-                ? (language === "hi" ? "सुन रहा हूँ... (रोकने के लिए दबाएं)" : "Listening... (tap to stop)")
-                : (language === "hi" ? "बोलना शुरू करें" : "Tap to speak")}
+                ? (language === "hi" ? "Sun raha hoon... stop karne ke liye dabayein" : "Listening... tap to stop")
+                : (language === "hi" ? "Bolna shuru karein" : "Tap to speak")}
             </span>
           </button>
 
-          {(isListening || interimTranscript) && (
-            <div className="interim-text">{interimTranscript}</div>
-          )}
+          {(isListening || interimTranscript) && <div className="interim-text">{interimTranscript}</div>}
         </div>
       )}
 
-      {/* Text area */}
       <textarea
         className="query-textarea"
         value={transcript}
         onChange={(e) => setTranscript(e.target.value)}
-        placeholder={
-          language === "hi"
-            ? "यहाँ अपना सवाल लिखें या बोलकर पूछें..."
-            : "Type or speak your query here..."
-        }
+        placeholder={language === "hi" ? "Yahan apna sawaal likhein ya bolkar poochhein..." : "Type or speak your query here..."}
         rows={4}
         disabled={loading}
       />
 
-      {/* Example queries */}
       {!transcript && (
         <div className="example-queries">
-          <p className="examples-label">
-            {language === "hi" ? "उदाहरण:" : "Try asking:"}
-          </p>
+          <p className="examples-label">{language === "hi" ? "Udaharan:" : "Try asking:"}</p>
           <div className="examples-grid">
             {EXAMPLE_QUERIES_HI.slice(0, 3).map((q, i) => (
-              <button
-                key={i}
-                className="example-btn"
-                onClick={() => setTranscript(q)}
-              >
+              <button key={i} className="example-btn" onClick={() => setTranscript(q)}>
                 {q}
               </button>
             ))}
@@ -134,15 +115,10 @@ export default function VoiceInput({ language, onSubmit, loading }) {
         </div>
       )}
 
-      {/* Submit */}
-      <button
-        className="submit-btn"
-        onClick={handleSubmit}
-        disabled={!transcript.trim() || loading}
-      >
+      <button className="submit-btn" onClick={handleSubmit} disabled={!transcript.trim() || loading}>
         {loading
-          ? (language === "hi" ? "विश्लेषण हो रहा है..." : "Analyzing...")
-          : (language === "hi" ? "सलाह लें →" : "Get Advisory →")}
+          ? (language === "hi" ? "Vishleshan ho raha hai..." : "Analyzing...")
+          : (language === "hi" ? "Salah lein ->" : "Get Advisory ->")}
       </button>
     </div>
   );

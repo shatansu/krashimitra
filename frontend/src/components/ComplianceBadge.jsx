@@ -1,19 +1,19 @@
-export default function ComplianceBadge({ status }) {
+﻿export default function ComplianceBadge({ status }) {
   const config = {
     PASSED: {
-      label: "✓ Compliant",
+      label: "Compliant",
       bg: "var(--color-background-success)",
       color: "var(--color-text-success)",
       border: "var(--color-border-success)",
     },
     WARNING: {
-      label: "⚠ Warning",
+      label: "Warning",
       bg: "var(--color-background-warning)",
       color: "var(--color-text-warning)",
       border: "var(--color-border-warning)",
     },
     BLOCKED: {
-      label: "✕ Blocked",
+      label: "Blocked",
       bg: "var(--color-background-danger)",
       color: "var(--color-text-danger)",
       border: "var(--color-border-danger)",

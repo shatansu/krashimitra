@@ -1,189 +1,315 @@
-import { useState, useRef } from "react";
+﻿import { useRef, useState } from "react";
+import { inspectImage } from "../utils/api";
 
-const VALID_CROP_KEYWORDS = [
-  "plant", "crop", "leaf", "leaves", "stem", "root", "flower", "fruit",
-  "disease", "pest", "farm", "field", "soil", "green", "yellow", "brown",
-  "wheat", "rice", "soybean", "tomato", "corn", "maize", "grass", "garden",
-  "agriculture", "botanical", "vegetation", "tree", "branch"
+const CROP_OPTIONS = [
+  { value: "", labelHi: "AI se detect hone do", labelEn: "Let AI detect" },
+  { value: "wheat", labelHi: "Gehu", labelEn: "Wheat" },
+  { value: "soybean", labelHi: "Soyabean", labelEn: "Soybean" },
+  { value: "rice", labelHi: "Dhan", labelEn: "Rice" },
+  { value: "gram", labelHi: "Chana", labelEn: "Gram" },
+  { value: "mustard", labelHi: "Sarson", labelEn: "Mustard" },
+  { value: "maize", labelHi: "Makka", labelEn: "Maize" },
+  { value: "tomato", labelHi: "Tamatar", labelEn: "Tomato" },
+  { value: "lentil", labelHi: "Masoor", labelEn: "Lentil" },
 ];
 
-export default function ImageUpload({ language, cropType, location, onSubmit, loading }) {
+function loadImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Photo could not be loaded."));
+    };
+    img.src = url;
+  });
+}
+
+function canvasToJpegFile(canvas, originalName) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Unable to prepare image for AI."));
+          return;
+        }
+        const safeName = (originalName || "crop-photo").replace(/\.[^.]+$/, "");
+        resolve(new File([blob], `${safeName}.jpg`, { type: "image/jpeg" }));
+      },
+      "image/jpeg",
+      0.92
+    );
+  });
+}
+
+async function normalizeImageForAI(file) {
+  const img = await loadImage(file);
+  const maxDimension = 1600;
+  const scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
+  const width = Math.max(1, Math.round(img.width * scale));
+  const height = Math.max(1, Math.round(img.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext("2d", { alpha: false });
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(img, 0, 0, width, height);
+
+  return canvasToJpegFile(canvas, file.name);
+}
+
+export default function ImageUpload({
+  language,
+  cropType,
+  location,
+  onSubmit,
+  onCropTypeChange,
+  onResetResult,
+  loading,
+}) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [query, setQuery] = useState("");
   const [validating, setValidating] = useState(false);
   const [validationError, setValidationError] = useState(null);
+  const [inspection, setInspection] = useState(null);
   const fileInputRef = useRef(null);
 
-  const DEFAULT_QUERY_HI = "इस फसल में क्या बीमारी या कीट है? क्या उपाय करूँ?";
+  const DEFAULT_QUERY_HI = "Is fasal me kya bimari ya keet hai? Kya upay karun?";
   const DEFAULT_QUERY_EN = "What disease or pest is affecting this crop? What should I do?";
 
-  const validateImage = async (file) => {
-    // Basic validation: size and type
+  async function validateImage(file) {
     if (!file.type.startsWith("image/")) {
-      return { valid: false, reason: "यह image file नहीं है। JPG या PNG photo डालें।" };
+      return {
+        valid: false,
+        reason: language === "hi" ? "Kripya image file upload karein." : "Please upload an image file.",
+      };
     }
-    if (file.size > 10 * 1024 * 1024) {
-      return { valid: false, reason: "Photo बहुत बड़ी है। 10MB से छोटी photo डालें।" };
+    if (file.size > 20 * 1024 * 1024) {
+      return {
+        valid: false,
+        reason: language === "hi" ? "Photo 20MB se chhoti honi chahiye." : "Photo must be smaller than 20MB.",
+      };
     }
 
-    // Resolution check via canvas
-    return new Promise((resolve) => {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        URL.revokeObjectURL(url);
-        const { width, height } = img;
-        if (width < 100 || height < 100) {
-          resolve({ valid: false, reason: "Photo बहुत छोटी है। कम से कम 100x100px होनी चाहिए।" });
-          return;
-        }
-        // Reasonable size = likely a real photo
-        resolve({ valid: true });
+    try {
+      const img = await loadImage(file);
+      if (img.width < 100 || img.height < 100) {
+        return {
+          valid: false,
+          reason: language === "hi" ? "Photo bahut chhoti hai. Clear photo dijiye." : "Photo is too small. Please upload a clearer photo.",
+        };
+      }
+      return { valid: true };
+    } catch {
+      return {
+        valid: false,
+        reason: language === "hi" ? "Photo load nahi ho saki. Dusri photo try karein." : "Photo could not be loaded. Please try another image.",
       };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        resolve({ valid: false, reason: "Photo load नहीं हो सकी। दूसरी photo try करें।" });
-      };
-      img.src = url;
-    });
-  };
+    }
+  }
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  function setPreviewFromFile(file) {
+    const reader = new FileReader();
+    reader.onloadend = () => setPreview(reader.result);
+    reader.readAsDataURL(file);
+  }
+
+  async function runInspection(file) {
+    onResetResult?.();
     setValidationError(null);
+    setInspection(null);
     setValidating(true);
 
-    const result = await validateImage(file);
-    setValidating(false);
-
-    if (!result.valid) {
-      setValidationError(result.reason);
+    const basicValidation = await validateImage(file);
+    if (!basicValidation.valid) {
+      setValidating(false);
+      setValidationError(basicValidation.reason);
       setSelectedFile(null);
       setPreview(null);
       return;
     }
 
-    setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setPreview(reader.result);
-    reader.readAsDataURL(file);
-  };
+    try {
+      const aiReadyFile = await normalizeImageForAI(file);
+      setSelectedFile(aiReadyFile);
+      setPreviewFromFile(aiReadyFile);
 
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-    setValidationError(null);
-    setValidating(true);
+      const analysis = await inspectImage({ imageFile: aiReadyFile, language, cropType });
+      setInspection(analysis);
 
-    const result = await validateImage(file);
-    setValidating(false);
+      if (analysis.detected_crop && (!cropType || cropType === "")) {
+        onCropTypeChange?.(analysis.detected_crop);
+      }
 
-    if (!result.valid) {
-      setValidationError(result.reason);
+      if (!analysis.is_crop_image || !analysis.image_clear) {
+        setValidationError(
+          language === "hi"
+            ? analysis.user_message_hi || analysis.user_message || "Kripya sahi aur clear fasal ki image upload karein."
+            : analysis.user_message || "Please upload a correct and clear crop image."
+        );
+      }
+    } catch (error) {
+      setSelectedFile(null);
+      setPreview(null);
+      setValidationError(
+        language === "hi"
+          ? "Photo AI ke liye prepare nahi ho paayi. Kripya doosri image try karein."
+          : (error.message || "Unable to prepare image for AI.")
+      );
+    } finally {
+      setValidating(false);
+    }
+  }
+
+  async function handleFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+    await runInspection(file);
+  }
+
+  async function handleDrop(event) {
+    event.preventDefault();
+    const file = event.dataTransfer.files?.[0];
+    if (!file) {
+      return;
+    }
+    await runInspection(file);
+  }
+
+  function handleSubmit() {
+    if (!selectedFile || validationError) {
       return;
     }
 
-    setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setPreview(reader.result);
-    reader.readAsDataURL(file);
-  };
-
-  const handleSubmit = () => {
-    if (!selectedFile) return;
     const finalQuery = query.trim() || (language === "hi" ? DEFAULT_QUERY_HI : DEFAULT_QUERY_EN);
-    // Append location to query so backend uses correct area
-    const queryWithLocation = `${finalQuery} (Location: ${location})`;
-    onSubmit(selectedFile, queryWithLocation);
-  };
+    const resolvedCrop = cropType || inspection?.detected_crop || "unknown";
+    const queryWithContext = `${finalQuery} (Location: ${location}; Crop: ${resolvedCrop})`;
+    onSubmit(selectedFile, queryWithContext);
+  }
+
+  const selectedCropValue = cropType || inspection?.detected_crop || "";
+  const disableSubmit = !selectedFile || loading || validating || Boolean(validationError);
 
   return (
     <div className="image-upload-container">
-      <h3>{language === "hi" ? "फसल की फ़ोटो भेजें" : "Upload crop photo"}</h3>
+      <h3>{language === "hi" ? "Fasal ki photo bhejein" : "Upload crop photo"}</h3>
       <p className="upload-subtitle">
         {language === "hi"
-          ? "सिर्फ फसल या पौधे की फ़ोटो डालें — बीमारी, कीट या पोषण की कमी पहचानने के लिए"
-          : "Upload only crop or plant photos — for disease, pest or deficiency detection"}
+          ? "AI pehle check karega ki image sach me fasal ki hai ya nahi, phir usi ke hisaab se analysis hoga."
+          : "AI will first check whether the image is actually a crop photo, then analyze it."}
       </p>
 
-      {/* Important warning */}
       <div className="image-warning">
-        ⚠️ {language === "hi"
-          ? "केवल फसल/पौधे की असली फ़ोटो डालें। दूसरी photos से गलत result आएगा।"
-          : "Only upload real crop/plant photos. Other images will give wrong results."}
+        {language === "hi"
+          ? "Sirf asli fasal ya paudhe ki clear photo dijiye. Wrong image se wrong result aayega."
+          : "Upload only a real and clear crop or plant photo. Wrong images will produce wrong results."}
       </div>
 
-      {/* Drop zone */}
       <div
         className={`drop-zone ${preview ? "has-preview" : ""} ${validating ? "validating" : ""}`}
         onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()}
-        onClick={() => !preview && !validating && fileInputRef.current.click()}
+        onDragOver={(event) => event.preventDefault()}
+        onClick={() => !preview && !validating && fileInputRef.current?.click()}
       >
         {validating ? (
           <div className="drop-placeholder">
-            <div className="drop-icon">⏳</div>
-            <p>{language === "hi" ? "Photo check हो रही है..." : "Validating photo..."}</p>
+            <div className="drop-icon">...</div>
+            <p>{language === "hi" ? "AI ke liye photo prepare aur inspect ho rahi hai..." : "Preparing and inspecting photo for AI..."}</p>
           </div>
         ) : preview ? (
           <div className="preview-container">
             <img src={preview} alt="Crop preview" className="crop-preview" />
             <button
               className="remove-image-btn"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={(event) => {
+                event.stopPropagation();
+                onResetResult?.();
                 setSelectedFile(null);
                 setPreview(null);
                 setValidationError(null);
+                setInspection(null);
               }}
-            >✕</button>
-            <div className="preview-badge">
-              ✓ {language === "hi" ? "Photo ready" : "Photo ready"}
-            </div>
+            >
+              x
+            </button>
+            <div className="preview-badge">Photo ready</div>
           </div>
         ) : (
           <div className="drop-placeholder">
-            <div className="drop-icon">📷</div>
-            <p>{language === "hi" ? "फसल की फ़ोटो यहाँ डालें या क्लिक करें" : "Drop crop photo here or click"}</p>
-            <p className="drop-hint">JPG, PNG — max 10MB</p>
+            <div className="drop-icon">Photo</div>
+            <p>{language === "hi" ? "Fasal ki photo yahan daalein ya click karein" : "Drop crop photo here or click"}</p>
+            <p className="drop-hint">JPG, PNG, WEBP, mobile images - max 20MB</p>
           </div>
         )}
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/*"
           onChange={handleFileChange}
           style={{ display: "none" }}
           capture="environment"
         />
       </div>
 
-      {/* Validation error */}
-      {validationError && (
-        <div className="validation-error">
-          ❌ {validationError}
+      {inspection && !validationError && (
+        <div className="image-ai-panel">
+          <div className="image-ai-row">
+            <strong>AI image check</strong>
+            <span className="image-ai-chip">{inspection.confidence || "medium"}</span>
+          </div>
+          <p className="image-ai-message">
+            {language === "hi" ? inspection.user_message_hi || inspection.user_message : inspection.user_message}
+          </p>
+
+          <label className="image-crop-label">
+            {language === "hi" ? "Detected crop / manually change crop" : "Detected crop / change manually"}
+            <select
+              className="image-crop-select"
+              value={selectedCropValue}
+              onChange={(event) => onCropTypeChange?.(event.target.value)}
+            >
+              {CROP_OPTIONS.map((option) => (
+                <option key={option.value || "auto"} value={option.value}>
+                  {language === "hi" ? option.labelHi : option.labelEn}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="image-crop-help">
+            {language === "hi"
+              ? "Agar AI ne crop galat detect kiya ho to yahin se sahi crop choose karein."
+              : "If AI detected the wrong crop, choose the correct crop here."}
+          </p>
         </div>
       )}
 
-      {/* Quick question buttons */}
+      {validationError && <div className="validation-error">{validationError}</div>}
+
       <div className="quick-questions">
-        <p className="quick-label">{language === "hi" ? "क्या जानना है?" : "What to know?"}</p>
+        <p className="quick-label">{language === "hi" ? "Kya janna hai?" : "What to know?"}</p>
         <div className="quick-grid">
           {[
-            { hi: "बीमारी पहचानें", en: "Identify disease" },
-            { hi: "कीट पहचानें", en: "Identify pest" },
-            { hi: "पोषण की कमी", en: "Nutrient deficiency" },
-            { hi: "उपाय बताएं", en: "Suggest treatment" },
-          ].map((q, i) => (
+            { hi: "Bimari pehchanein", en: "Identify disease" },
+            { hi: "Keet pehchanein", en: "Identify pest" },
+            { hi: "Poshan ki kami", en: "Nutrient deficiency" },
+            { hi: "Upay batayein", en: "Suggest treatment" },
+          ].map((item) => (
             <button
-              key={i}
-              className={`quick-btn ${query === (language === "hi" ? q.hi : q.en) ? "selected" : ""}`}
-              onClick={() => setQuery(language === "hi" ? q.hi : q.en)}
+              key={item.en}
+              className={`quick-btn ${query === (language === "hi" ? item.hi : item.en) ? "selected" : ""}`}
+              onClick={() => setQuery(language === "hi" ? item.hi : item.en)}
             >
-              {language === "hi" ? q.hi : q.en}
+              {language === "hi" ? item.hi : item.en}
             </button>
           ))}
         </div>
@@ -192,25 +318,19 @@ export default function ImageUpload({ language, cropType, location, onSubmit, lo
       <textarea
         className="query-textarea"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(event) => setQuery(event.target.value)}
         placeholder={language === "hi" ? DEFAULT_QUERY_HI : DEFAULT_QUERY_EN}
         rows={2}
       />
 
-      <button
-        className="submit-btn"
-        onClick={handleSubmit}
-        disabled={!selectedFile || loading || validating || !!validationError}
-      >
+      <button className="submit-btn" onClick={handleSubmit} disabled={disableSubmit}>
         {loading
-          ? (language === "hi" ? "फ़ोटो की जांच हो रही है..." : "Analyzing photo...")
-          : (language === "hi" ? "फ़ोटो भेजें और सलाह लें →" : "Analyze & get advice →")}
+          ? (language === "hi" ? "Photo ki jaanch ho rahi hai..." : "Analyzing photo...")
+          : (language === "hi" ? "Photo bhejein aur salah lein ->" : "Analyze and get advice ->")}
       </button>
 
       <p className="privacy-note">
-        🔒 {language === "hi"
-          ? "आपकी फ़ोटो सुरक्षित है — केवल विश्लेषण के लिए उपयोग होती है"
-          : "Your photo is private — used only for analysis"}
+        {language === "hi" ? "Aapki photo sirf analysis ke liye use hoti hai." : "Your photo is used only for analysis."}
       </p>
     </div>
   );

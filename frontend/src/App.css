@@ -560,3 +560,51 @@ body {
   background: rgba(59,109,17,0.85); color: #fff;
   font-size: 12px; padding: 3px 10px; border-radius: 10px;
 }
+
+.image-ai-panel {
+  background: var(--teal-50);
+  border: 1px solid #9FE1CB;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image-ai-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.image-ai-chip {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(15,110,86,0.12);
+  color: var(--teal-600);
+  text-transform: capitalize;
+}
+
+.image-ai-message,
+.image-crop-help {
+  font-size: 13px;
+  color: var(--teal-600);
+}
+
+.image-crop-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #2c2c2a;
+}
+
+.image-crop-select {
+  border: 1px solid #9FE1CB;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 14px;
+  background: #fff;
+}
