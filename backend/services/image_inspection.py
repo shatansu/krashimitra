@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import base64
 import os
@@ -71,7 +71,7 @@ class OpenSourceImageInspector:
             return self._build_invalid_response(
                 reason="Uploaded file could not be read as an image.",
                 user_message="The uploaded file could not be read as an image. Please try another crop photo.",
-                user_message_hi="Upload ki gayi file image ke roop me read nahi ho paayi. Kripya doosri fasal photo try karein.",
+                user_message_hi="अपलोड की गई फाइल इमेज के रूप में पढ़ी नहीं जा सकी। कृपया दूसरी फसल की फोटो आजमाएं।",
                 confidence="low",
             )
 
@@ -80,7 +80,7 @@ class OpenSourceImageInspector:
             return self._build_invalid_response(
                 reason=clarity["reason"],
                 user_message="The image is too dark, too bright, or not sharp enough for analysis. Please upload a clearer crop photo.",
-                user_message_hi="Image analysis ke liye clear nahi hai. Kripya roshni me ek aur clear fasal photo upload karein.",
+                user_message_hi="इमेज विश्लेषण के लिए साफ नहीं है। कृपया रोशनी में एक और साफ फसल फोटो अपलोड करें।",
                 confidence="medium",
                 is_crop_image=True,
             )
@@ -90,7 +90,7 @@ class OpenSourceImageInspector:
             return self._build_invalid_response(
                 reason="Open-source image model is not available locally.",
                 user_message="Local image model is not ready yet. Please install the vision dependencies and try again.",
-                user_message_hi="Local image model abhi ready nahi hai. Kripya vision dependencies install karke phir try karein.",
+                user_message_hi="लोकल इमेज मॉडल अभी तैयार नहीं है। कृपया vision dependencies install करके फिर कोशिश करें।",
                 confidence="low",
             )
 
@@ -105,7 +105,7 @@ class OpenSourceImageInspector:
             return self._build_invalid_response(
                 reason="Image does not look like a real crop or plant photo.",
                 user_message="The uploaded image does not appear to be a crop or plant photo. Please upload your crop image for analysis.",
-                user_message_hi="Upload ki gayi image fasal ya paudhe ki photo nahi lag rahi. Kripya apni fasal ki sahi photo dijiye.",
+                user_message_hi="अपलोड की गई इमेज फसल या पौधे की फोटो नहीं लग रही। कृपया अपनी फसल की सही फोटो दें।",
                 confidence=self._score_to_confidence(max(crop_score, non_crop_best)),
             )
 
@@ -134,7 +134,7 @@ class OpenSourceImageInspector:
             confidence=confidence,
             reason=f"Local open-source vision model detected a likely crop image. Detected crop: {crop_label}.",
             user_message=f"Image verified successfully. Detected crop: {crop_label}.",
-            user_message_hi=f"Image verify ho gayi. Detected crop: {crop_label}.",
+            user_message_hi=f"इमेज सफलतापूर्वक जांची गई। पहचानी गई फसल: {crop_label}.",
             action_steps=[
                 "Review the detected crop before submitting.",
                 "If needed, change the crop manually from the dropdown.",
@@ -231,4 +231,5 @@ class OpenSourceImageInspector:
         if score >= 0.5:
             return "medium"
         return "low"
+
 

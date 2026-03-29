@@ -27,14 +27,14 @@ const TEXT = {
     advisory: 'Advisory', advice: 'Advice', actionSteps: 'Action steps', blocked: 'Advisory blocked - Compliance violation', safeAlternatives: 'Safe alternatives:', sources: 'Sources:', session: 'Session', confidence: 'confident', compliant: 'Compliant', warningShort: 'Warning', blockedShort: 'Blocked', sellNow: 'Sell now', hold: 'Hold', sellPartial: 'Sell partial', monitor: 'Monitor', belowMsp: 'Below MSP - check support schemes', showDecisionAuditTrail: 'Show decision audit trail', hideDecisionAuditTrail: 'Hide decision audit trail', steps: 'steps', locationInputTitle: 'Click here and type any location manually',
   },
   hi: {
-    modeVoice: 'Aawaz se poochhein', modeImage: 'Photo bhejein', modeSoil: 'Mitti jaanch', modeMarket: 'Bazaar bhaav',
-    tagline: 'Krishi salahkar AI', locationShort: 'Loc', detectingLocation: 'Location detect ho rahi hai', detectedLocation: 'Detected location',
-    locationDenied: 'Location access deny hua', manualLocation: 'Manual location', districtPlaceholder: 'Jila, rajya likhein',
-    detectAgain: 'Meri location dubara detect karein', selectCrop: 'Fasal chunein', locationDeniedBanner: 'Location access deny ho gaya. Aap manually location type kar sakte hain.', retry: 'Retry',
-    warning: 'Chetavani', loadingDataPrefix: 'Data ikattha ho raha hai:', loadingAnalyze: 'Vishleshan ho raha hai...', loadingChecks: 'Jaach ho rahi hai...', footer: 'KrishiMitra - CIBRC, ICAR aur NPOP guidelines ke anusar | Kisan Helpline: 1800-180-1551',
-    imageTitle: 'Fasal ki photo bhejein', imageSubtitle: 'AI pehle check karega ki image sach me fasal ki hai ya nahi, phir usi ke hisaab se analysis hoga.', imageWarning: 'Sirf asli fasal ya paudhe ki clear photo dijiye. Wrong image se wrong result aayega.', imagePreparing: 'AI ke liye photo prepare aur inspect ho rahi hai...', imageDrop: 'Fasal ki photo yahan daalein ya click karein', imageHint: 'JPG, PNG, WEBP, mobile images - max 20MB', imageReady: 'Photo ready', imageAiCheck: 'AI image check', imageDetectedCrop: 'Detected crop / manually change crop', imageWrongCrop: 'Agar AI ne crop galat detect kiya ho to yahin se sahi crop choose karein.', imageWhatKnow: 'Kya janna hai?', identifyDisease: 'Bimari pehchanein', identifyPest: 'Keet pehchanein', nutrientDeficiency: 'Poshan ki kami', suggestTreatment: 'Upay batayein', imageSubmit: 'Photo bhejein aur salah lein ->', imageAnalyzing: 'Photo ki jaanch ho rahi hai...', privacy: 'Aapki photo sirf analysis ke liye use hoti hai.', imageTypeError: 'Kripya image file upload karein.', imageSizeError: 'Photo 20MB se chhoti honi chahiye.', imageSmallError: 'Photo bahut chhoti hai. Clear photo dijiye.', imageLoadError: 'Photo load nahi ho saki. Kripya doosri image try karein.', imagePrepareError: 'Photo AI ke liye prepare nahi ho paayi.',
-    voiceTitle: 'Apni samasya batayein', voiceSubtitle: 'Bolkar ya likhkar poochhein', listening: 'Sun raha hoon... stop karne ke liye dabayein', startSpeaking: 'Bolna shuru karein', voicePlaceholder: 'Yahan apna sawaal likhein ya bolkar poochhein...', tryAsking: 'Udaharan:', getAdvisory: 'Salah lein ->',
-    advisory: 'Salah', advice: 'Salah', actionSteps: 'Kya karein?', blocked: 'Salah blocked - compliance violation', safeAlternatives: 'Safe alternatives:', sources: 'Data sources:', session: 'Session', confidence: 'vishwas', compliant: 'Sahi', warningShort: 'Chetavani', blockedShort: 'Roka gaya', sellNow: 'Abhi bechein', hold: 'Rok kar rakhein', sellPartial: 'Aadha bechein', monitor: 'Nazar rakhein', belowMsp: 'MSP se kam - support schemes dekhein', showDecisionAuditTrail: 'Decision audit trail dekhein', hideDecisionAuditTrail: 'Decision audit trail chhupayein', steps: 'steps', locationInputTitle: 'Yahan click karke apni location manually likhein',
+    modeVoice: 'आवाज से पूछें', modeImage: 'फोटो भेजें', modeSoil: 'मिट्टी जांच', modeMarket: 'बाजार भाव',
+    tagline: 'कृषि सलाहकार AI', locationShort: 'स्थान', detectingLocation: 'लोकेशन पता की जा रही है', detectedLocation: 'पता चली लोकेशन',
+    locationDenied: 'लोकेशन की अनुमति नहीं मिली', manualLocation: 'मैनुअल लोकेशन', districtPlaceholder: 'जिला, राज्य लिखें',
+    detectAgain: 'मेरी लोकेशन दोबारा पता करें', selectCrop: 'फसल चुनें', locationDeniedBanner: 'लोकेशन एक्सेस नहीं मिला। आप अपनी लोकेशन मैनुअली लिख सकते हैं।', retry: 'फिर से',
+    warning: 'चेतावनी', loadingDataPrefix: 'डेटा इकट्ठा हो रहा है:', loadingAnalyze: 'विश्लेषण हो रहा है...', loadingChecks: 'जांच हो रही है...', footer: 'KrishiMitra - CIBRC, ICAR और NPOP guidelines के अनुसार | किसान हेल्पलाइन: 1800-180-1551',
+    imageTitle: 'फसल की फोटो भेजें', imageSubtitle: 'AI पहले जांच करेगा कि इमेज सच में फसल की है या नहीं, फिर उसी के हिसाब से विश्लेषण होगा।', imageWarning: 'सिर्फ असली फसल या पौधे की साफ फोटो दें। गलत इमेज से गलत परिणाम आएगा।', imagePreparing: 'AI के लिए फोटो तैयार और जांची जा रही है...', imageDrop: 'फसल की फोटो यहां डालें या क्लिक करें', imageHint: 'JPG, PNG, WEBP, मोबाइल इमेज - अधिकतम 20MB', imageReady: 'फोटो तैयार', imageAiCheck: 'AI इमेज जांच', imageDetectedCrop: 'पहचानी गई फसल / मैनुअल बदलें', imageWrongCrop: 'अगर AI ने फसल गलत पहचानी हो तो यहां से सही फसल चुनें।', imageWhatKnow: 'क्या जानना है?', identifyDisease: 'बीमारी पहचानें', identifyPest: 'कीट पहचानें', nutrientDeficiency: 'पोषण की कमी', suggestTreatment: 'उपाय बताएं', imageSubmit: 'फोटो भेजें और सलाह लें ->', imageAnalyzing: 'फोटो की जांच हो रही है...', privacy: 'आपकी फोटो सिर्फ विश्लेषण के लिए उपयोग होती है।', imageTypeError: 'कृपया इमेज फाइल अपलोड करें।', imageSizeError: 'फोटो 20MB से छोटी होनी चाहिए।', imageSmallError: 'फोटो बहुत छोटी है। कृपया साफ फोटो दें।', imageLoadError: 'फोटो लोड नहीं हो सकी। कृपया दूसरी इमेज आजमाएं।', imagePrepareError: 'फोटो AI के लिए तैयार नहीं हो पाई।',
+    voiceTitle: 'अपनी समस्या बताएं', voiceSubtitle: 'बोलकर या लिखकर पूछें', listening: 'सुन रहा हूँ... रोकने के लिए दबाएं', startSpeaking: 'बोलना शुरू करें', voicePlaceholder: 'यहां अपना सवाल लिखें या बोलकर पूछें...', tryAsking: 'उदाहरण:', getAdvisory: 'सलाह लें ->',
+    advisory: 'सलाह', advice: 'सलाह', actionSteps: 'क्या करें?', blocked: 'सलाह रोकी गई - compliance violation', safeAlternatives: 'सुरक्षित विकल्प:', sources: 'डेटा स्रोत:', session: 'सेशन', confidence: 'विश्वास', compliant: 'सही', warningShort: 'चेतावनी', blockedShort: 'रोका गया', sellNow: 'अभी बेचें', hold: 'रोक कर रखें', sellPartial: 'आधा बेचें', monitor: 'नजर रखें', belowMsp: 'MSP से कम - सहायता योजनाएं देखें', showDecisionAuditTrail: 'Decision audit trail देखें', hideDecisionAuditTrail: 'Decision audit trail छुपाएं', steps: 'स्टेप्स', locationInputTitle: 'यहां क्लिक करके अपनी लोकेशन मैनुअली लिखें',
   },
   mr: { modeVoice: 'Aawazene vichara', modeImage: 'Photo pathava', modeSoil: 'Mati tapasani', modeMarket: 'Bazaar bhav', tagline: 'Krishi salagar AI', districtPlaceholder: 'Jilha, rajya liha', detectAgain: 'Majhi location punha shodha', selectCrop: 'Pik niwda', imageTitle: 'Pikachi photo pathava', imageSubtitle: 'AI adhi check karel ki image khari pikachi aahe ka, mag analysis hoil.', imageWarning: 'Fakta khari pikachi clear photo dya.', voiceTitle: 'Tumchi samasya sanga', voiceSubtitle: 'Bolun kiwa lihun vichara', voicePlaceholder: 'Ithe prashna liha kiwa bolun vichara...', getAdvisory: 'Salah ghya ->', advisory: 'Salah', actionSteps: 'Kay karayche?' },
   gu: { modeVoice: 'Aawaj thi pucho', modeImage: 'Photo moklo', modeSoil: 'Mati tapas', modeMarket: 'Bazaar bhaav', tagline: 'Krushi salahkar AI', districtPlaceholder: 'Jillo, rajya lakho', detectAgain: 'Mari location fari detect karo', selectCrop: 'Fasal chuno', imageTitle: 'Fasal ni photo moklo', imageSubtitle: 'AI pela check karse ke image kharekhar fasal ni chhe ke nahi.', imageWarning: 'Fakta asli fasal ni clear photo aapo.', voiceTitle: 'Tamari samasya kaho', voiceSubtitle: 'Boline athva lakhine pucho', voicePlaceholder: 'Ahiya tamaro sawal lakho athva boline pucho...', getAdvisory: 'Salah lo ->', advisory: 'Salah', actionSteps: 'Shu karvu?' },
@@ -45,19 +45,19 @@ const TEXT = {
 };
 
 const CROP_LABELS = {
-  wheat: { en: 'Wheat', hi: 'Gehu', mr: 'Gahu', gu: 'Gehu', pa: 'Gehu', bn: 'Gehu', ta: 'Gothumai', te: 'Godhuma' },
-  soybean: { en: 'Soybean', hi: 'Soyabean', mr: 'Soyabean', gu: 'Soyabean', pa: 'Soyabean', bn: 'Soyabean', ta: 'Soyabean', te: 'Soyabean' },
-  rice: { en: 'Rice', hi: 'Dhan', mr: 'Dhan', gu: 'Dhan', pa: 'Dhaan', bn: 'Dhan', ta: 'Arisi', te: 'Vari' },
-  gram: { en: 'Gram', hi: 'Chana', mr: 'Chana', gu: 'Chana', pa: 'Chana', bn: 'Chhola', ta: 'Kadalai', te: 'Senaga' },
-  mustard: { en: 'Mustard', hi: 'Sarson', mr: 'Mohari', gu: 'Sarson', pa: 'Sarson', bn: 'Sorse', ta: 'Kadugu', te: 'Avalu' },
-  maize: { en: 'Maize', hi: 'Makka', mr: 'Makka', gu: 'Makka', pa: 'Makka', bn: 'Bhutta', ta: 'Makka cholam', te: 'Mokka jonna' },
-  tomato: { en: 'Tomato', hi: 'Tamatar', mr: 'Tamatar', gu: 'Tameta', pa: 'Tamatar', bn: 'Tomato', ta: 'Thakkali', te: 'Tamata' },
-  lentil: { en: 'Lentil', hi: 'Masoor', mr: 'Masoor', gu: 'Masoor', pa: 'Masoor', bn: 'Mosur', ta: 'Masoor', te: 'Masoor' },
+  wheat: { en: 'Wheat', hi: 'गेहूं', mr: 'Gahu', gu: 'Gehu', pa: 'Gehu', bn: 'Gehu', ta: 'Gothumai', te: 'Godhuma' },
+  soybean: { en: 'Soybean', hi: 'सोयाबीन', mr: 'Soyabean', gu: 'Soyabean', pa: 'Soyabean', bn: 'Soyabean', ta: 'Soyabean', te: 'Soyabean' },
+  rice: { en: 'Rice', hi: 'धान', mr: 'Dhan', gu: 'Dhan', pa: 'Dhaan', bn: 'Dhan', ta: 'Arisi', te: 'Vari' },
+  gram: { en: 'Gram', hi: 'चना', mr: 'Chana', gu: 'Chana', pa: 'Chana', bn: 'Chhola', ta: 'Kadalai', te: 'Senaga' },
+  mustard: { en: 'Mustard', hi: 'सरसों', mr: 'Mohari', gu: 'Sarson', pa: 'Sarson', bn: 'Sorse', ta: 'Kadugu', te: 'Avalu' },
+  maize: { en: 'Maize', hi: 'मक्का', mr: 'Makka', gu: 'Makka', pa: 'Makka', bn: 'Bhutta', ta: 'Makka cholam', te: 'Mokka jonna' },
+  tomato: { en: 'Tomato', hi: 'टमाटर', mr: 'Tamatar', gu: 'Tameta', pa: 'Tamatar', bn: 'Tomato', ta: 'Thakkali', te: 'Tamata' },
+  lentil: { en: 'Lentil', hi: 'मसूर', mr: 'Masoor', gu: 'Masoor', pa: 'Masoor', bn: 'Mosur', ta: 'Masoor', te: 'Masoor' },
 };
 
 const VOICE_EXAMPLES = {
   en: ['My wheat leaves are turning yellow, what should I do?', 'There are insects in my soybean crop.', 'What is today\'s mandi price of gram?'],
-  hi: ['Mere gehu me peele patte aa rahe hain, kya karun?', 'Soyabean ki fasal me keede lag gaye hain.', 'Aaj mandi me chana ka bhaav kya hai?'],
+  hi: ['मेरे गेहूं में पीले पत्ते आ रहे हैं, क्या करूं?', 'सोयाबीन की फसल में कीड़े लग गए हैं।', 'आज मंडी में चना का भाव क्या है?'],
   mr: ['Majhya gahuche paane pivali hot aahet, kay karu?', 'Soyabean pikat kid lagli aahe.', 'Aaj chana cha mandi bhav kay aahe?'],
   gu: ['Mara gehu na panna pila thai gaya chhe, shu karu?', 'Soyabean ni fasal ma keet lagi gaya chhe.', 'Aaje chana no mandi bhaav shu chhe?'],
   pa: ['Mere gehu de patte peele ho rahe ne, ki karaan?', 'Soyabean di fasal vich keede lag gaye ne.', 'Ajj chane da mandi bhaav ki hai?'],
@@ -68,7 +68,7 @@ const VOICE_EXAMPLES = {
 
 const QUESTION_OPTIONS = {
   en: ['Identify disease', 'Identify pest', 'Nutrient deficiency', 'Suggest treatment'],
-  hi: ['Bimari pehchanein', 'Keet pehchanein', 'Poshan ki kami', 'Upay batayein'],
+  hi: ['बीमारी पहचानें', 'कीट पहचानें', 'पोषण की कमी', 'उपाय बताएं'],
   mr: ['Rog olkha', 'Kid olkha', 'Poshanachi kamtarata', 'Upay sanga'],
   gu: ['Rog olkho', 'Keet olkho', 'Poshan ni kami', 'Upay batao'],
   pa: ['Bimari pachhano', 'Keet pachhano', 'Poshan di kami', 'Upay dasso'],
@@ -88,7 +88,7 @@ export function cropLabel(language, crop) {
 
 export function cropOptions(language, includeAuto = true) {
   const options = SUPPORTED_CROPS.map((value) => ({ value, label: cropLabel(language, value) }));
-  return includeAuto ? [{ value: '', label: language === 'en' ? 'Let AI detect' : 'AI se detect hone do' }, ...options] : options;
+  return includeAuto ? [{ value: '', label: language === 'en' ? 'Let AI detect' : 'AI से पहचानने दें' }, ...options] : options;
 }
 
 export function voiceExamples(language) {

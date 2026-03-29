@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import base64
 import json
@@ -449,11 +449,11 @@ class KrishiAgent:
 
         advisory = " ".join(en_parts)
         advisory_hindi = (
-            f"{crop} ke liye {location} mein turant dhyan: {query}. "
-            "Mausam, photo aur anya data dekhkar salah banayi gayi hai."
+            f"{crop} के लिए {location} में मुख्य सलाह: {query}. "
+            "मौसम, फोटो और अन्य डेटा देखकर सलाह तैयार की गई है।"
         )
         if image_analysis and image_analysis.get("detected_crop"):
-            advisory_hindi += f" Image se {image_analysis['detected_crop']} jaisa crop detect hua hai."
+            advisory_hindi += f" इमेज से {image_analysis['detected_crop']} जैसी फसल पहचानी गई है।"
 
         confidence_score = round(min(0.45 + len(tool_context.get("data_sources", [])) * 0.1, 0.9), 2)
         return {
@@ -493,7 +493,7 @@ class KrishiAgent:
 
     def _build_blocked_response(self, flags: list[str], alternatives: list[str], language: str) -> str:
         if language == "hi":
-            message = "Yeh salah niyamon ke anusaar nahi di ja sakti:\n"
+            message = "यह सलाह नियमों के अनुसार नहीं दी जा सकती:\n"
         else:
             message = "Advisory blocked by compliance rules:\n"
         for flag in flags:
@@ -569,6 +569,7 @@ class KrishiAgent:
         if "zaid" in query_lower:
             return "zaid"
         return "rabi"
+
 
 
 
