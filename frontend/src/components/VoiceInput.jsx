@@ -1,12 +1,5 @@
-﻿import { useState, useRef, useEffect } from "react";
-
-const EXAMPLE_QUERIES_HI = [
-  "Mere gehu me peele patte aa rahe hain, kya karun?",
-  "Soyabean ki fasal me keede lag gaye hain.",
-  "Aaj mandi me chana ka bhaav kya hai?",
-  "Dhan ki buwai ka sahi samay kab hai?",
-  "Mitti ka pH 8.2 hai, kya karun?",
-];
+import { useState, useRef, useEffect } from "react";
+import { SPEECH_LOCALES, t, voiceExamples } from "../utils/i18n";
 
 export default function VoiceInput({ language, onSubmit, loading }) {
   const [isListening, setIsListening] = useState(false);
@@ -22,7 +15,7 @@ export default function VoiceInput({ language, onSubmit, loading }) {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = language === "hi" ? "hi-IN" : "en-IN";
+      recognition.lang = SPEECH_LOCALES[language] || SPEECH_LOCALES.hi;
 
       recognition.onresult = (event) => {
         let final = "";
@@ -35,7 +28,9 @@ export default function VoiceInput({ language, onSubmit, loading }) {
             interim += result[0].transcript;
           }
         }
-        if (final) setTranscript((prev) => prev + final);
+        if (final) {
+          setTranscript((prev) => prev + final);
+        }
         setInterimTranscript(interim);
       };
 
@@ -45,70 +40,57 @@ export default function VoiceInput({ language, onSubmit, loading }) {
     }
   }, [language]);
 
-  const startListening = () => {
-    if (!recognitionRef.current) return;
+  function startListening() {
+    if (!recognitionRef.current) {
+      return;
+    }
     setTranscript("");
     setInterimTranscript("");
     setIsListening(true);
     recognitionRef.current.start();
-  };
+  }
 
-  const stopListening = () => {
-    if (!recognitionRef.current) return;
+  function stopListening() {
+    if (!recognitionRef.current) {
+      return;
+    }
     recognitionRef.current.stop();
     setIsListening(false);
-  };
+  }
 
-  const handleSubmit = () => {
+  function handleSubmit() {
     if (transcript.trim()) {
       onSubmit(transcript.trim());
     }
-  };
+  }
 
   return (
     <div className="voice-input-container">
       <div className="voice-title">
-        <h3>{language === "hi" ? "Apni samasya batayein" : "Ask your question"}</h3>
-        <p className="voice-subtitle">
-          {language === "hi" ? "Bolkar ya likhkar poochhein" : "Speak or type your query"}
-        </p>
+        <h3>{t(language, "voiceTitle")}</h3>
+        <p className="voice-subtitle">{t(language, "voiceSubtitle")}</p>
       </div>
 
       {speechSupported && (
         <div className="mic-section">
-          <button
-            className={`mic-btn ${isListening ? "listening" : ""}`}
-            onClick={isListening ? stopListening : startListening}
-            disabled={loading}
-          >
+          <button className={`mic-btn ${isListening ? "listening" : ""}`} onClick={isListening ? stopListening : startListening} disabled={loading}>
             <div className={`mic-icon ${isListening ? "pulsing" : ""}`}>{isListening ? "Stop" : "Mic"}</div>
-            <span>
-              {isListening
-                ? (language === "hi" ? "Sun raha hoon... stop karne ke liye dabayein" : "Listening... tap to stop")
-                : (language === "hi" ? "Bolna shuru karein" : "Tap to speak")}
-            </span>
+            <span>{isListening ? t(language, "listening") : t(language, "startSpeaking")}</span>
           </button>
 
           {(isListening || interimTranscript) && <div className="interim-text">{interimTranscript}</div>}
         </div>
       )}
 
-      <textarea
-        className="query-textarea"
-        value={transcript}
-        onChange={(e) => setTranscript(e.target.value)}
-        placeholder={language === "hi" ? "Yahan apna sawaal likhein ya bolkar poochhein..." : "Type or speak your query here..."}
-        rows={4}
-        disabled={loading}
-      />
+      <textarea className="query-textarea" value={transcript} onChange={(event) => setTranscript(event.target.value)} placeholder={t(language, "voicePlaceholder")} rows={4} disabled={loading} />
 
       {!transcript && (
         <div className="example-queries">
-          <p className="examples-label">{language === "hi" ? "Udaharan:" : "Try asking:"}</p>
+          <p className="examples-label">{t(language, "tryAsking")}</p>
           <div className="examples-grid">
-            {EXAMPLE_QUERIES_HI.slice(0, 3).map((q, i) => (
-              <button key={i} className="example-btn" onClick={() => setTranscript(q)}>
-                {q}
+            {voiceExamples(language).map((item) => (
+              <button key={item} className="example-btn" onClick={() => setTranscript(item)}>
+                {item}
               </button>
             ))}
           </div>
@@ -116,9 +98,7 @@ export default function VoiceInput({ language, onSubmit, loading }) {
       )}
 
       <button className="submit-btn" onClick={handleSubmit} disabled={!transcript.trim() || loading}>
-        {loading
-          ? (language === "hi" ? "Vishleshan ho raha hai..." : "Analyzing...")
-          : (language === "hi" ? "Salah lein ->" : "Get Advisory ->")}
+        {loading ? t(language, "loadingAnalyze") : t(language, "getAdvisory")}
       </button>
     </div>
   );

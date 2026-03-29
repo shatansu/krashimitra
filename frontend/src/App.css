@@ -91,6 +91,7 @@ body {
   color: #fff; border-radius: var(--radius-sm); padding: 4px 8px;
   font-size: 13px; cursor: pointer; outline: none;
 }
+.lang-toggle option,
 .crop-select select option { color: #2c2c2a; background: #fff; }
 
 /* ===== MODE NAV ===== */

@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+import { useState } from "react";
+import { t } from "../utils/i18n";
 
 const FIELD_LABELS = {
   nitrogen: { hi: "Nitrogen (N)", en: "Nitrogen (N)", unit: "kg/ha", low: 0, high: 600, typical: 280 },
@@ -9,33 +10,29 @@ const FIELD_LABELS = {
 };
 
 export default function SoilForm({ cropType, language, onSubmit, loading }) {
-  const [soilData, setSoilData] = useState({
-    nitrogen: "",
-    phosphorus: "",
-    potassium: "",
-    ph: "",
-    organic_carbon: "",
-    soil_type: "black",
-  });
+  const [soilData, setSoilData] = useState({ nitrogen: "", phosphorus: "", potassium: "", ph: "", organic_carbon: "", soil_type: "black" });
+  const local = language === "en" ? "en" : "hi";
 
-  const handleChange = (field, value) => {
+  function handleChange(field, value) {
     setSoilData((prev) => ({ ...prev, [field]: value }));
-  };
+  }
 
-  const handleSubmit = () => {
+  function handleSubmit() {
     const cleanData = {};
-    Object.entries(soilData).forEach(([k, v]) => {
-      if (v !== "" && v !== null) cleanData[k] = parseFloat(v) || v;
+    Object.entries(soilData).forEach(([key, value]) => {
+      if (value !== "" && value !== null) {
+        cleanData[key] = parseFloat(value) || value;
+      }
     });
 
-    const query = language === "hi"
-      ? `Meri mitti jaanch report ke anusaar ${cropType || "fasal"} ke liye khaad aur urvarak ki salah dein. Mitti data: N=${soilData.nitrogen || "?"}, P=${soilData.phosphorus || "?"}, K=${soilData.potassium || "?"}, pH=${soilData.ph || "?"}`
-      : `Based on my soil health card, give fertilizer recommendations for ${cropType || "my crop"}. Soil: N=${soilData.nitrogen}, P=${soilData.phosphorus}, K=${soilData.potassium}, pH=${soilData.ph}`;
+    const query = language === "en"
+      ? `Based on my soil health card, give fertilizer recommendations for ${cropType || "my crop"}. Soil: N=${soilData.nitrogen}, P=${soilData.phosphorus}, K=${soilData.potassium}, pH=${soilData.ph}`
+      : `Meri mitti jaanch report ke anusaar ${cropType || "fasal"} ke liye khaad aur urvarak ki salah dein. Mitti data: N=${soilData.nitrogen || "?"}, P=${soilData.phosphorus || "?"}, K=${soilData.potassium || "?"}, pH=${soilData.ph || "?"}`;
 
     onSubmit(cleanData, query);
-  };
+  }
 
-  const getNutrientStatus = (field, value) => {
+  function getNutrientStatus(field, value) {
     if (!value) return null;
     const v = parseFloat(value);
     const ranges = {
@@ -55,80 +52,45 @@ export default function SoilForm({ cropType, language, onSubmit, loading }) {
     if (v < r.low) return "low";
     if (v < r.high) return "medium";
     return "good";
-  };
-
-  const statusLabel = {
-    low: { hi: "Kam", en: "Low", color: "var(--color-text-danger)" },
-    medium: { hi: "Madhyam", en: "Medium", color: "var(--color-text-warning)" },
-    good: { hi: "Achha", en: "Good", color: "var(--color-text-success)" },
-    high: { hi: "Adhik", en: "High", color: "var(--color-text-warning)" },
-  };
+  }
 
   return (
     <div className="soil-form-container">
-      <h3>{language === "hi" ? "Mitti jaanch card data daalein" : "Enter soil health card data"}</h3>
-      <p className="soil-subtitle">
-        {language === "hi"
-          ? "Mitti jaanch card se numbers dekhar bharein. Unknown ho to blank chhod sakte hain."
-          : "Fill from your Soil Health Card. Leave blank if unknown."}
-      </p>
+      <h3>{t(language, "soilTitle")}</h3>
+      <p className="soil-subtitle">{t(language, "soilSubtitle")}</p>
 
       <div className="soil-fields">
         {Object.entries(FIELD_LABELS).map(([field, meta]) => {
           const status = getNutrientStatus(field, soilData[field]);
-          const statusInfo = status ? statusLabel[status] : null;
           return (
             <div key={field} className="soil-field">
               <div className="soil-field-header">
                 <label className="soil-label">
-                  {language === "hi" ? meta.hi : meta.en}
+                  {meta[local]}
                   {meta.unit && <span className="soil-unit"> ({meta.unit})</span>}
                 </label>
-                {statusInfo && (
-                  <span className="nutrient-status" style={{ color: statusInfo.color }}>
-                    {language === "hi" ? statusInfo.hi : statusInfo.en}
-                  </span>
-                )}
+                {status && <span className="nutrient-status">{t(language, status)}</span>}
               </div>
               <div className="soil-input-row">
                 <input
                   type="number"
                   className="soil-input"
                   value={soilData[field]}
-                  onChange={(e) => handleChange(field, e.target.value)}
-                  placeholder={`${language === "hi" ? "Udaharan" : "e.g."} ${meta.typical}`}
+                  onChange={(event) => handleChange(field, event.target.value)}
+                  placeholder={`${t(language, "eg")} ${meta.typical}`}
                   min={meta.low}
                   max={meta.high}
                   step={meta.step || 1}
                 />
                 {meta.unit && <span className="soil-unit-label">{meta.unit}</span>}
               </div>
-              {soilData[field] && (
-                <div className="nutrient-bar">
-                  <div
-                    className="nutrient-bar-fill"
-                    style={{
-                      width: `${Math.min(100, (parseFloat(soilData[field]) / meta.high) * 100)}%`,
-                      backgroundColor: status === "low"
-                        ? "var(--color-background-danger)"
-                        : status === "good"
-                          ? "var(--color-background-success)"
-                          : "var(--color-background-warning)",
-                    }}
-                  />
-                </div>
-              )}
             </div>
           );
         })}
 
         <div className="soil-field">
-          <label className="soil-label">{language === "hi" ? "Mitti ka prakaar" : "Soil type"}</label>
-          <select
-            className="soil-input"
-            value={soilData.soil_type}
-            onChange={(e) => handleChange("soil_type", e.target.value)}
-          >
+          <label className="soil-label">{t(language, "soilType")}</label>
+          <select className="soil-input" value={soilData.soil_type} onChange={(event) => handleChange("soil_type", event.target.value)}>
             <option value="black">Black (Cotton soil)</option>
             <option value="red">Red soil</option>
             <option value="alluvial">Alluvial</option>
@@ -139,18 +101,12 @@ export default function SoilForm({ cropType, language, onSubmit, loading }) {
       </div>
 
       <div className="shc-info">
-        <span>Info</span>
-        <p>
-          {language === "hi"
-            ? "Soil Health Card nahi hai? soilhealth.dac.gov.in par apply karein."
-            : "No Soil Health Card? Apply at soilhealth.dac.gov.in"}
-        </p>
+        <span>{t(language, "info")}</span>
+        <p>{t(language, "soilInfo")}</p>
       </div>
 
       <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
-        {loading
-          ? (language === "hi" ? "Vishleshan ho raha hai..." : "Analyzing...")
-          : (language === "hi" ? "Mitti ka vishleshan karein ->" : "Analyze soil ->")}
+        {loading ? t(language, "loadingAnalyze") : t(language, "soilAnalyze")}
       </button>
     </div>
   );

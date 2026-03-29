@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import base64
 import os
@@ -64,7 +64,7 @@ class OpenSourceImageInspector:
         self.model_name = os.environ.get("IMAGE_INSPECTOR_MODEL", "openai/clip-vit-base-patch32")
         self.cache_dir = os.environ.get("IMAGE_INSPECTOR_CACHE_DIR", "") or None
 
-    def inspect(self, image_b64: str, crop_hint: str = "") -> dict[str, Any]:
+    def inspect(self, image_b64: str, crop_hint: str = "", language: str = "hi") -> dict[str, Any]:
         try:
             image = self._decode_image(image_b64)
         except Exception:
@@ -231,3 +231,4 @@ class OpenSourceImageInspector:
         if score >= 0.5:
             return "medium"
         return "low"
+

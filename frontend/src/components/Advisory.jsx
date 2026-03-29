@@ -1,10 +1,7 @@
-﻿import { useState } from "react";
 import ComplianceBadge from "./ComplianceBadge";
+import { t } from "../utils/i18n";
 
 export default function Advisory({ result, language }) {
-  const [showHindi, setShowHindi] = useState(language === "hi");
-  const [expandSchemes, setExpandSchemes] = useState(false);
-
   const {
     advisory,
     advisory_hindi,
@@ -19,47 +16,48 @@ export default function Advisory({ result, language }) {
     session_id,
   } = result;
 
-  const displayText = showHindi && advisory_hindi ? advisory_hindi : advisory;
-
+  const displayText = language === "en" ? advisory : advisory || advisory_hindi || result.advisory;
   const confidenceColor = confidence_score > 0.75
     ? "var(--color-text-success)"
     : confidence_score > 0.5
       ? "var(--color-text-warning)"
       : "var(--color-text-danger)";
 
+  const signalLabels = {
+    sell_now: t(language, "sellNow"),
+    hold: t(language, "hold"),
+    sell_partial: t(language, "sellPartial"),
+    monitor: t(language, "monitor"),
+  };
+
   return (
     <div className="advisory-card">
       <div className="advisory-header">
         <div className="advisory-title">
-          <span className="advisory-icon">Advice</span>
-          <h2>{language === "hi" ? "Salah" : "Advisory"}</h2>
+          <span className="advisory-icon">{t(language, "advice")}</span>
+          <h2>{t(language, "advisory")}</h2>
         </div>
         <div className="advisory-meta">
-          <ComplianceBadge status={compliance_status} />
+          <ComplianceBadge status={compliance_status} language={language} />
           <div className="confidence-badge" style={{ color: confidenceColor }}>
-            {Math.round(confidence_score * 100)}% confident
+            {`${Math.round(confidence_score * 100)}% ${t(language, "confidence")}`}
           </div>
-          {advisory_hindi && (
-            <button className="lang-switch-btn" onClick={() => setShowHindi(!showHindi)}>
-              {showHindi ? "EN" : "HI"}
-            </button>
-          )}
         </div>
       </div>
 
       {compliance_status === "BLOCKED" && (
         <div className="compliance-block">
           <div className="compliance-block-header">
-            <strong>{language === "hi" ? "Salah blocked - compliance violation" : "Advisory blocked - Compliance Violation"}</strong>
+            <strong>{t(language, "blocked")}</strong>
           </div>
-          {compliance_flags.map((flag, i) => (
-            <div key={i} className="compliance-flag blocked">{flag}</div>
+          {compliance_flags.map((flag, index) => (
+            <div key={index} className="compliance-flag blocked">{flag}</div>
           ))}
           {safe_alternatives?.length > 0 && (
             <div className="alternatives-section">
-              <strong>{language === "hi" ? "Safe alternatives:" : "Safe alternatives:"}</strong>
-              {safe_alternatives.map((alt, i) => (
-                <div key={i} className="alternative-item">{alt}</div>
+              <strong>{t(language, "safeAlternatives")}</strong>
+              {safe_alternatives.map((item, index) => (
+                <div key={index} className="alternative-item">{item}</div>
               ))}
             </div>
           )}
@@ -68,22 +66,22 @@ export default function Advisory({ result, language }) {
 
       {compliance_status === "WARNING" && compliance_flags.length > 0 && (
         <div className="compliance-warning">
-          {compliance_flags.map((flag, i) => (
-            <div key={i} className="compliance-flag warning">{flag}</div>
+          {compliance_flags.map((flag, index) => (
+            <div key={index} className="compliance-flag warning">{flag}</div>
           ))}
         </div>
       )}
 
       <div className="advisory-body">
-        <p className={`advisory-text ${showHindi ? "hindi-text" : ""}`}>{displayText}</p>
+        <p className="advisory-text">{displayText}</p>
       </div>
 
-      {action_steps && action_steps.length > 0 && (
+      {action_steps?.length > 0 && (
         <div className="action-steps">
-          <h3>{language === "hi" ? "Kya karein?" : "Action steps"}</h3>
+          <h3>{t(language, "actionSteps")}</h3>
           <ol className="steps-list">
-            {action_steps.map((step, i) => (
-              <li key={i} className="step-item">{step}</li>
+            {action_steps.map((step, index) => (
+              <li key={index} className="step-item">{step}</li>
             ))}
           </ol>
         </div>
@@ -92,55 +90,39 @@ export default function Advisory({ result, language }) {
       {market_signal && (
         <div className={`market-signal signal-${market_signal.signal}`}>
           <div className="signal-header">
-            <strong className="signal-label">
-              {market_signal.signal === "sell_now" && (language === "hi" ? "Abhi bechein" : "Sell Now")}
-              {market_signal.signal === "hold" && (language === "hi" ? "Rok kar rakhein" : "Hold")}
-              {market_signal.signal === "sell_partial" && (language === "hi" ? "Aadha bechein" : "Sell Partial")}
-              {market_signal.signal === "monitor" && (language === "hi" ? "Nazar rakhein" : "Monitor")}
-            </strong>
+            <strong className="signal-label">{signalLabels[market_signal.signal] || market_signal.signal}</strong>
             <span className="signal-trend">{market_signal.trend}</span>
           </div>
           <p className="signal-reason">{market_signal.reason}</p>
-          {market_signal.below_msp && (
-            <div className="msp-warning">
-              {language === "hi" ? "MSP se kam - support ke liye sambandhit yojana dekhein" : "Below MSP - check support schemes"}
-            </div>
-          )}
+          {market_signal.below_msp && <div className="msp-warning">{t(language, "belowMsp")}</div>}
         </div>
       )}
 
-      {scheme_eligibility && scheme_eligibility.length > 0 && (
+      {scheme_eligibility?.length > 0 && (
         <div className="schemes-section">
-          <button className="schemes-toggle" onClick={() => setExpandSchemes(!expandSchemes)}>
-            {language === "hi"
-              ? `${scheme_eligibility.length} sarkari yojanaon ke liye patra`
-              : `Eligible for ${scheme_eligibility.length} government schemes`}
-            {expandSchemes ? " Hide" : " Show"}
-          </button>
-          {expandSchemes && (
-            <div className="schemes-list">
-              {scheme_eligibility.map((scheme, i) => (
-                <div key={i} className="scheme-item">
-                  <strong>{scheme.scheme}</strong>
-                  <p>{scheme.benefit}</p>
-                  {scheme.helpline && <a href={`tel:${scheme.helpline}`} className="helpline-link">Helpline: {scheme.helpline}</a>}
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="schemes-toggle">{`${scheme_eligibility.length} ${t(language, "eligibleSchemes")}`}</div>
+          <div className="schemes-list">
+            {scheme_eligibility.map((scheme, index) => (
+              <div key={index} className="scheme-item">
+                <strong>{scheme.scheme}</strong>
+                <p>{scheme.benefit}</p>
+                {scheme.helpline && <a href={`tel:${scheme.helpline}`} className="helpline-link">Helpline: {scheme.helpline}</a>}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {data_sources && data_sources.length > 0 && (
+      {data_sources?.length > 0 && (
         <div className="data-sources">
-          <span className="sources-label">{language === "hi" ? "Data sources:" : "Sources:"}</span>
-          {data_sources.map((src, i) => (
-            <span key={i} className="source-chip">{src.replace(/_/g, " ")}</span>
+          <span className="sources-label">{t(language, "sources")}</span>
+          {data_sources.map((src, index) => (
+            <span key={index} className="source-chip">{src.replace(/_/g, " ")}</span>
           ))}
         </div>
       )}
 
-      <div className="session-id">Session: {session_id?.slice(0, 8)}</div>
+      <div className="session-id">{`${t(language, "session")}: ${session_id?.slice(0, 8)}`}</div>
     </div>
   );
 }

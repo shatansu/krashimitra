@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import base64
 import json
@@ -179,7 +179,7 @@ class KrishiAgent:
         language: str,
         crop_hint: str = "",
     ) -> dict[str, Any]:
-        return self.image_inspector.inspect(image_b64=image_b64, crop_hint=crop_hint)
+        return self.image_inspector.inspect(image_b64=image_b64, crop_hint=crop_hint, language=language)
 
     async def _collect_tool_context(
         self,
@@ -325,7 +325,8 @@ class KrishiAgent:
             "Use the provided tool outputs to answer the farmer. "
             "Respond ONLY in strict JSON with keys: advisory, advisory_hindi, action_steps, confidence. "
             "Do not invent data. Use only what is provided.\n\n"
-            f"Language: {language}\n"
+            f"Requested language code: {language}\n"
+            "Write the advisory and action_steps in the requested language. If the requested language is not English, do not answer in English. "
             f"Location: {location}\n"
             f"Crop: {crop}\n"
             f"Farmer query: {query}\n"
@@ -456,7 +457,7 @@ class KrishiAgent:
 
         confidence_score = round(min(0.45 + len(tool_context.get("data_sources", [])) * 0.1, 0.9), 2)
         return {
-            "advisory": advisory_hindi if language == "hi" else advisory,
+            "advisory": advisory if language == "en" else advisory_hindi,
             "advisory_hindi": advisory_hindi,
             "action_steps": action_steps,
             "confidence_score": confidence_score,
@@ -568,6 +569,8 @@ class KrishiAgent:
         if "zaid" in query_lower:
             return "zaid"
         return "rabi"
+
+
 
 
 

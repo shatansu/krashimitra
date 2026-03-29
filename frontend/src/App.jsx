@@ -1,18 +1,12 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import VoiceInput from "./components/VoiceInput";
 import ImageUpload from "./components/ImageUpload";
 import SoilForm from "./components/SoilForm";
 import Advisory from "./components/Advisory";
 import AuditTrail from "./components/AuditTrail";
 import { useKrishiAgent } from "./hooks/useKrishiAgent";
+import { LANGUAGE_OPTIONS, cropLabel, cropOptions, t } from "./utils/i18n";
 import "./App.css";
-
-const MODES = [
-  { id: "voice", label: "Aawaz se poochhein", labelEn: "Voice Query" },
-  { id: "image", label: "Photo bhejein", labelEn: "Crop Photo" },
-  { id: "soil", label: "Mitti jaanch", labelEn: "Soil Analysis" },
-  { id: "market", label: "Bazaar bhaav", labelEn: "Market Price" },
-];
 
 function cleanLocationPart(value) {
   return (value || "").replace(/\s+/g, " ").trim();
@@ -46,6 +40,15 @@ function formatDetectedLocation(address = {}) {
 
   return state || locality || "India";
 }
+
+const MODES = [
+  { id: "voice", key: "modeVoice" },
+  { id: "image", key: "modeImage" },
+  { id: "soil", key: "modeSoil" },
+  { id: "market", key: "modeMarket" },
+];
+
+const MARKET_CROPS = ["wheat", "soybean", "rice", "gram", "mustard", "maize"];
 
 export default function App() {
   const [mode, setMode] = useState("voice");
@@ -84,9 +87,7 @@ export default function App() {
           setLocationStatus("found");
         }
       },
-      () => {
-        setLocationStatus("denied");
-      },
+      () => setLocationStatus("denied"),
       { timeout: 8000, enableHighAccuracy: false }
     );
   }
@@ -95,14 +96,12 @@ export default function App() {
     submit({ query: transcript, language, location, cropType, imageFile, soilData });
   }
 
-  const locationHint =
-    locationStatus === "detecting"
-      ? "Detecting location"
-      : locationStatus === "found"
-        ? "Detected location"
-        : locationStatus === "denied"
-          ? "Location access denied"
-          : "Manual location";
+  const locationHintKey = {
+    detecting: "detectingLocation",
+    found: "detectedLocation",
+    denied: "locationDenied",
+    manual: "manualLocation",
+  }[locationStatus] || "manualLocation";
 
   return (
     <div className="app">
@@ -112,14 +111,14 @@ export default function App() {
             <span className="logo-leaf">KM</span>
             <div>
               <h1>KrishiMitra</h1>
-              <p>Krishi salahkar AI</p>
+              <p>{t(language, "tagline")}</p>
             </div>
           </div>
         </div>
 
         <div className="header-right">
           <div className="location-bar">
-            <span className="location-icon">{locationStatus === "detecting" ? "..." : "Loc"}</span>
+            <span className="location-icon">{locationStatus === "detecting" ? "..." : t(language, "locationShort")}</span>
 
             <div className="location-field-wrap">
               <input
@@ -129,40 +128,33 @@ export default function App() {
                   setLocation(event.target.value);
                   setLocationStatus("manual");
                 }}
-                placeholder={language === "hi" ? "Jila, rajya likhein" : "Enter district, state"}
-                title="Click here and type any location manually"
+                placeholder={t(language, "districtPlaceholder")}
+                title={t(language, "locationInputTitle")}
               />
-              <span className="location-meta">{locationHint}</span>
+              <span className="location-meta">{t(language, locationHintKey)}</span>
             </div>
 
-            <button
-              type="button"
-              className="retry-loc-btn"
-              onClick={detectLocation}
-              title={language === "hi" ? "Meri location dubara detect karein" : "Detect my location again"}
-            >
+            <button type="button" className="retry-loc-btn" onClick={detectLocation} title={t(language, "detectAgain")}>
               R
             </button>
           </div>
 
-          <select
-            className="lang-toggle"
-            value={language}
-            onChange={(event) => setLanguage(event.target.value)}
-          >
-            <option value="hi">Hindi</option>
-            <option value="en">English</option>
+          <select className="lang-toggle" value={language} onChange={(event) => setLanguage(event.target.value)}>
+            {LANGUAGE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
 
           <div className="crop-select">
             <select value={cropType} onChange={(event) => setCropType(event.target.value)}>
-              <option value="">{language === "hi" ? "Fasal chunein" : "Select crop"}</option>
-              <option value="wheat">Gehu (Wheat)</option>
-              <option value="soybean">Soyabean</option>
-              <option value="rice">Dhan (Rice)</option>
-              <option value="gram">Chana (Gram)</option>
-              <option value="mustard">Sarson</option>
-              <option value="maize">Makka</option>
+              <option value="">{t(language, "selectCrop")}</option>
+              {cropOptions(language, false).map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -170,13 +162,9 @@ export default function App() {
 
       {locationStatus === "denied" && (
         <div className="loc-denied-banner">
-          <span>
-            {language === "hi"
-              ? "Location access deny ho gaya. Aap manually location type kar sakte hain."
-              : "Location access was denied. You can type any location manually."}
-          </span>
+          <span>{t(language, "locationDeniedBanner")}</span>
           <button type="button" onClick={detectLocation} className="loc-retry-link">
-            Retry
+            {t(language, "retry")}
           </button>
         </div>
       )}
@@ -191,21 +179,15 @@ export default function App() {
               reset();
             }}
           >
-            <span className="mode-label-hi">{item.label}</span>
-            <span className="mode-label-en">{item.labelEn}</span>
+            <span className="mode-label-hi">{t(language, item.key)}</span>
+            <span className="mode-label-en">&nbsp;</span>
           </button>
         ))}
       </nav>
 
       <main className="main-content">
         <div className="input-panel">
-          {mode === "voice" && (
-            <VoiceInput
-              language={language}
-              onSubmit={(text) => handleVoiceSubmit(text, null, null)}
-              loading={loading}
-            />
-          )}
+          {mode === "voice" && <VoiceInput language={language} onSubmit={(text) => handleVoiceSubmit(text, null, null)} loading={loading} />}
 
           {mode === "image" && (
             <ImageUpload
@@ -220,38 +202,31 @@ export default function App() {
           )}
 
           {mode === "soil" && (
-            <SoilForm
-              cropType={cropType}
-              language={language}
-              onSubmit={(soilData, query) => handleVoiceSubmit(query, null, soilData)}
-              loading={loading}
-            />
+            <SoilForm cropType={cropType} language={language} onSubmit={(soilData, query) => handleVoiceSubmit(query, null, soilData)} loading={loading} />
           )}
 
           {mode === "market" && (
             <div className="market-input">
-              <h3>{language === "hi" ? "Kaun si fasal ka bhaav dekhna hai?" : "Which crop price?"}</h3>
-              <p className="market-location-note">
-                {language === "hi" ? `${location} ke mandi bhaav` : `Mandi prices for ${location}`}
-              </p>
+              <h3>{t(language, "modeMarket")}</h3>
+              <p className="market-location-note">{`${t(language, "marketTitle")}: ${location}`}</p>
               <div className="market-crop-grid">
-                {["Gehu", "Soyabean", "Dhan", "Chana", "Sarson", "Makka"].map((crop) => (
+                {MARKET_CROPS.map((crop) => (
                   <button
                     key={crop}
                     className="crop-price-btn"
                     onClick={() =>
                       submit({
                         query:
-                          language === "hi"
-                            ? `${crop} ka aaj ka mandi bhaav batao aur bechne ya rakhne ki salah do. Meri location ${location} hai.`
-                            : `Tell me today's mandi price for ${crop} and whether I should sell or hold. My location is ${location}.`,
+                          language === "en"
+                            ? `Tell me today's mandi price for ${cropLabel(language, crop)} and whether I should sell or hold. My location is ${location}.`
+                            : `Aaj ${cropLabel(language, crop)} ka mandi bhaav batao aur bechne ya rakhne ki salah do. Meri location ${location} hai.`,
                         language,
                         location,
                         cropType: crop,
                       })
                     }
                   >
-                    {crop}
+                    {cropLabel(language, crop)}
                   </button>
                 ))}
               </div>
@@ -261,7 +236,7 @@ export default function App() {
 
         {error && (
           <div className="error-banner">
-            <span>Warning: {error}</span>
+            <span>{`${t(language, "warning")}: ${error}`}</span>
           </div>
         )}
 
@@ -270,15 +245,9 @@ export default function App() {
             {loading && (
               <div className="loading-state">
                 <div className="loading-steps">
-                  <div className="loading-step active">
-                    {language === "hi" ? `${location} ka data ikattha ho raha hai...` : `Collecting data for ${location}...`}
-                  </div>
-                  <div className="loading-step">
-                    {language === "hi" ? "Vishleshan ho raha hai..." : "Analyzing..."}
-                  </div>
-                  <div className="loading-step">
-                    {language === "hi" ? "Jaach ho rahi hai..." : "Running compliance checks..."}
-                  </div>
+                  <div className="loading-step active">{`${t(language, "loadingDataPrefix")} ${location}...`}</div>
+                  <div className="loading-step">{t(language, "loadingAnalyze")}</div>
+                  <div className="loading-step">{t(language, "loadingChecks")}</div>
                 </div>
               </div>
             )}
@@ -289,8 +258,8 @@ export default function App() {
 
                 <div className="audit-section">
                   <button className="audit-toggle-btn" onClick={() => setShowAudit(!showAudit)}>
-                    {showAudit ? "Hide" : "Show"} {language === "hi" ? "decision audit trail" : "decision audit trail"}
-                    <span className="audit-count">{result.audit_trail?.length || 0} steps</span>
+                    {showAudit ? t(language, "hideDecisionAuditTrail") : t(language, "showDecisionAuditTrail")}
+                    <span className="audit-count">{`${result.audit_trail?.length || 0} ${t(language, "steps")}`}</span>
                   </button>
 
                   {showAudit && <AuditTrail trail={result.audit_trail} language={language} />}
@@ -302,11 +271,7 @@ export default function App() {
       </main>
 
       <footer className="app-footer">
-        <p>
-          {language === "hi"
-            ? "KrishiMitra - CIBRC, ICAR aur NPOP guidelines ke anusar | Kisan Helpline: 1800-180-1551"
-            : "KrishiMitra - Compliant with CIBRC, ICAR and NPOP guidelines | Kisan Helpline: 1800-180-1551"}
-        </p>
+        <p>{t(language, "footer")}</p>
       </footer>
     </div>
   );
