@@ -1,187 +1,272 @@
-# KrishiMitra 🌾 — AI Agricultural Advisory Agent
+# KrishiMitra
 
-> **Domain-Specialized AI Agent with Compliance Guardrails**  
-> Built for smallholder farmers in India (Madhya Pradesh focus)
+AI-enabled agricultural advisory web app for Indian farmers. The project combines:
 
----
+- FastAPI backend
+- React + Vite frontend
+- Gemini-powered advisory and support chat
+- Local open-source image inspection for crop photo validation
+- Compliance guardrails for safer recommendations
 
-## Problem Solved
+## What The App Does
 
-India has **150M+ smallholder farmers** who lose 30-40% of crops to preventable issues — because they get:
-- Wrong advice, too late
-- No knowledge of government schemes they qualify for  
-- No way to check if a pesticide is banned or safe
-- No real-time market price intelligence
+KrishiMitra helps a farmer:
 
-KrishiMitra is a voice-first, multilingual AI agent that gives every farmer access to an expert agronomist — in Hindi, in their dialect, even on 2G.
+- ask agriculture questions by text or voice
+- upload crop images for basic crop-photo validation
+- inspect soil inputs
+- check mandi prices
+- review compliance warnings before acting on advice
+- use an in-app AI support assistant with voice input and voice playback
 
----
+## Current Key Features
 
-## Judging Criteria Coverage
+- Gemini advisory flow for agriculture queries
+- Gemini support chat panel for free-form doubt clearing
+- Multi-language UI selector
+- Voice input in browser using Web Speech API
+- Voice playback of assistant answers using browser speech synthesis
+- Manual location editing in the header
+- Manual crop override if detected crop is wrong
+- Local image inspection with `openai/clip-vit-base-patch32`
+- Compliance checks for pesticide safety and related rules
+- Audit trail endpoints for advisory sessions
 
-| Criterion | How we address it |
-|---|---|
-| **Domain expertise** | Soil science, IPM, mandi economics, crop calendars (ICAR-sourced) |
-| **Compliance guardrails** | 6-check engine: CIB&RC banned list, PHI window, NPOP organic, dosage, PPE, restricted chemicals |
-| **Edge-case handling** | Offline-safe mock data, API fallbacks, PHI window blocking, organic farmer detection |
-| **Full task completion** | Voice → analysis → compliance → audit → TTS response in one flow |
-| **Auditability** | Immutable session audit trail — every tool call, LLM step, compliance decision logged |
+## Important Architecture Notes
 
----
+### Advisory And Support
 
-## Architecture
+- Main advisory is handled by the backend agent
+- Support chat uses Gemini through a dedicated conversational API
+- The support panel is not a fixed FAQ; it sends real chat messages and recent history to the backend
 
+### Image Inspection
+
+Image inspection no longer depends on Gemini quota.
+
+It now uses a local open-source vision model:
+
+- default model: `openai/clip-vit-base-patch32`
+
+This image layer is used for:
+
+- crop-vs-non-crop validation
+- clarity checks
+- basic crop guess
+
+The user can still manually choose the crop if the detected crop is wrong.
+
+## Project Structure
+
+```text
+krishimitra/
+|- backend/
+|  |- main.py
+|  |- agent/
+|  |  |- core.py
+|  |  |- prompts.py
+|  |  `- tools.py
+|  |- audit/
+|  |  `- logger.py
+|  |- compliance/
+|  |  |- engine.py
+|  |  |- pesticide_db.py
+|  |  `- rules.py
+|  |- services/
+|  |  |- image_inspection.py
+|  |  |- mandi.py
+|  |  |- schemes.py
+|  |  |- soil.py
+|  |  `- weather.py
+|  `- requirements.txt
+|- frontend/
+|  |- src/
+|  |  |- App.jsx
+|  |  |- components/
+|  |  |- hooks/
+|  |  `- utils/
+|  `- package.json
+`- README.md
 ```
-Farmer Input (Voice / Photo / Soil / Text)
-        ↓
-FastAPI Backend
-        ├── Input Processor (STT, vision, NLP)
-        ├── Agent Orchestrator (Claude claude-opus-4-5 with 6 tools)
-        │       ├── get_weather()         → OpenWeatherMap
-        │       ├── get_mandi_prices()    → e-NAM / Agmarknet
-        │       ├── analyze_soil()        → ICAR guidelines
-        │       ├── check_pesticide_safety() → CIB&RC database
-        │       ├── get_govt_schemes()    → PM-KISAN, PMFBY, KCC
-        │       └── get_crop_calendar()   → KVK / SAU data
-        ├── Compliance Engine (6 guardrail checks)
-        └── Audit Logger (immutable trail)
-        ↓
-Output: Hindi advisory + action steps + market signal + scheme eligibility
-```
 
----
+## Backend Setup
 
-## Quick Start
-
-### Backend
 ```bash
 cd backend
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env
-# Add your ANTHROPIC_API_KEY to .env
+copy .env.example .env
+```
 
+Update `backend/.env` with your keys:
+
+```env
+GEMINI_API_KEY=your_key_here
+GEMINI_MODEL=gemini-2.5-flash
+OPENWEATHER_API_KEY=your_key_here
+AGMARKNET_API_KEY=your_key_here
+IMAGE_INSPECTOR_MODEL=openai/clip-vit-base-patch32
+HOST=0.0.0.0
+PORT=8000
+```
+
+Run backend:
+
+```bash
 uvicorn main:app --reload --port 8000
 ```
 
-### Frontend
+## Frontend Setup
+
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local
+copy .env.example .env.local
 npm run dev
-# Opens at http://localhost:3000
 ```
 
-> **Demo mode**: Works without OpenWeather / Agmarknet keys — uses realistic mock data.
+Default frontend URL:
 
----
+- `http://localhost:3000`
 
-## Compliance Guardrail System
+Default backend URL:
 
-The compliance engine runs **6 checks** on every advisory before it reaches the farmer:
+- `http://127.0.0.1:8000`
 
-### 1. CIB&RC Banned Pesticide Check
-- 27 banned chemicals blocked (Endosulfan, Monocrotophos, Carbofuran, etc.)
-- Automatic safe alternative suggestions
+## Environment Files
 
-### 2. PHI Window Check
-- Pre-Harvest Interval enforced per crop (wheat: 15 days, soybean: 21 days, etc.)
-- If crop is within PHI window → spraying blocked regardless of chemical
+### Backend
 
-### 3. NPOP Organic Standards
-- Detects if farmer has organic context from query
-- Blocks ALL synthetic pesticides → suggests bio-pesticides only
-- NPOP-approved input list (Trichoderma, Beauveria, neem oil, etc.)
+File: `backend/.env.example`
 
-### 4. Dosage Limit Check
-- Flags unusually high dosage recommendations
-- Cross-checks against label-recommended ranges
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
+- `OPENWEATHER_API_KEY`
+- `AGMARKNET_API_KEY`
+- `IMAGE_INSPECTOR_MODEL`
+- `HOST`
+- `PORT`
 
-### 5. PPE Reminder
-- Any chemical advisory without protective equipment mention → WARNING status
-- Ensures gloves + mask always recommended
+### Frontend
 
-### 6. Restricted Chemical Flag
-- Chlorpyrifos, Acephate, etc. → requires license verification note
+File: `frontend/.env.example`
 
----
+- `VITE_API_URL`
 
-## Demo Script (5 minutes)
+You can point it to:
 
-### Scene 1: Voice query in Hindi
-> "मेरे गेहूं में पीले पत्ते आ रहे हैं, क्या करूँ?"  
-> *(Yellow leaves on my wheat, what do I do?)*
-
-**What happens:**
-1. Agent calls `get_weather()` → checks humidity (disease risk)
-2. Agent calls `analyze_soil()` → checks for nitrogen deficiency
-3. Agent calls `check_pesticide_safety()` → verifies any chemical before recommending
-4. Compliance engine checks PHI + banned list
-5. Response in Hindi: cause identified (likely nitrogen/zinc deficiency), actionable steps, no banned chemicals, PPE reminder included
-
-### Scene 2: Compliance BLOCKED demo
-> Ask: "क्या मैं Endosulfan डाल सकता हूँ?"  
-> *(Can I use Endosulfan?)*
-
-**What happens:**
-- Compliance engine immediately catches banned chemical
-- Response: ✕ BLOCKED — explains why, suggests Neem oil / Chlorpyrifos alternatives
-
-### Scene 3: Crop photo + disease detection
-- Upload a photo of a diseased crop leaf
-- Agent uses vision to identify disease, maps to compliant treatment
-
-### Scene 4: Mandi price intelligence
-> "आज सोयाबीन बेचूँ या रखूँ?"  
-> *(Should I sell soybean today or hold?)*
-
-- Agent fetches current mandi price
-- Compares with MSP (₹4,892/quintal)
-- Generates SELL / HOLD signal with trend analysis
-
-### Scene 5: Audit trail
-- Click "निर्णय का लेखा-जोखा देखें" (View audit trail)
-- Shows every step: tool calls, data sources, compliance checks, LLM reasoning
-
----
+- `http://127.0.0.1:8000`
+- or leave it aligned with your local backend host
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
+| Method | Endpoint | Purpose |
 |---|---|---|
-| POST | `/api/advise` | Main advisory (text/soil input) |
-| POST | `/api/advise/image` | Advisory with crop photo |
-| GET | `/api/audit/{session_id}` | Full audit trail |
-| GET | `/api/mandi/prices?crop=wheat&location=Rewa` | Mandi prices |
-| GET | `/api/compliance/pesticides?name=Endosulfan` | Pesticide check |
+| GET | `/` | Basic API info |
+| GET | `/health` | Health check |
+| POST | `/api/advise` | Text advisory |
+| POST | `/api/support/chat` | Conversational Gemini support chat |
+| POST | `/api/image/inspect` | Crop image validation and crop guess |
+| POST | `/api/advise/image` | Advisory using image input |
+| GET | `/api/audit/{session_id}` | Session audit trail |
+| GET | `/api/compliance/pesticides` | Pesticide lookup |
+| GET | `/api/mandi/prices` | Mandi prices |
 
----
+## Languages And Voice
 
-## Data Sources
+The frontend supports a multi-language selector and browser-based speech tools.
 
-| Source | Data | Status |
-|---|---|---|
-| CIB&RC India | Banned/restricted pesticide list | Embedded database |
-| ICAR Guidelines | Fertilizer doses, crop calendars | Embedded database |
-| NPOP | Organic farming approved inputs | Embedded database |
-| OpenWeatherMap | Live weather + 7-day forecast | API (free tier) |
-| e-NAM / Agmarknet | Mandi prices | API (data.gov.in) |
-| Ministry of Agriculture | PM-KISAN, PMFBY, KCC details | Embedded database |
-| Soil Health Card portal | SHC interpretation | Embedded ICAR logic |
+Current UI language set includes:
 
----
+- Hindi
+- English
+- Marathi
+- Gujarati
+- Punjabi
+- Bengali
+- Tamil
+- Telugu
+
+Notes:
+
+- UI labels follow the selected language pack where available
+- voice input depends on browser speech-recognition support
+- voice playback depends on available browser/system voices
+- generated advisory quality is best when backend language handling is available for that language
+
+## Support Assistant
+
+The app includes a floating support assistant that can:
+
+- answer open-ended user questions
+- keep chat context
+- accept voice input
+- speak answers aloud
+
+Typical use cases:
+
+- "Mere dhan me patte pe daag aa rahe hain, kya karun?"
+- "Aaj soybean rokna chahiye ya bechna chahiye?"
+- "Yeh dawa surakshit hai ya nahi?"
+
+## Compliance Layer
+
+The project includes compliance-focused backend checks such as:
+
+- pesticide restriction checks
+- banned/unsafe chemical handling
+- rule-based safety validation
+- warning/badge style output in advisory views
+
+This layer is intended to reduce unsafe suggestions, especially around pesticide-related guidance.
+
+## Local Image Model Notes
+
+On first use, the local image inspection model may need to download weights. After the model is cached, repeated use is smoother.
+
+If you want higher crop/disease accuracy later, the next step is to replace the zero-shot image inspector with a fine-tuned agriculture-specific model.
 
 ## Tech Stack
 
-- **Backend**: Python 3.11, FastAPI,Gemini (with tool use)
-- **Frontend**: React 18, Vite, Web Speech API (voice)
-- **AI**: Claude claude-opus-4-5 with 6 custom tools, multi-modal (vision + text)
-- **Compliance**: Custom rule engine (no LLM dependency for guardrails)
+- Backend: FastAPI, Pydantic, Uvicorn
+- AI advisory/support: Google Gemini API
+- Image inspection: Transformers + Torch + Pillow
+- Frontend: React, Vite
+- Voice: Web Speech API + Speech Synthesis API
 
----
+## Current Limitations
 
-## Team
+- Local image inspection is useful for validation and basic crop guess, but not a full disease-diagnosis model
+- Some regional language flows may still rely on fallback text paths
+- Browser speech features vary across devices and browsers
+- Live mandi/weather quality depends on external API availability
 
-Built for the Domain-Specialized AI Agents with Compliance Guardrails hackathon.
+## Recommended Next Improvements
 
-*Kisan Helpline: 1800-180-1551 | PM-KISAN: pmkisan.gov.in | PMFBY: pmfby.gov.in*
+- add an agriculture-specific fine-tuned crop classifier
+- add disease-specific trained models
+- strengthen full regional-language advisory generation
+- improve offline caching and low-bandwidth behavior
+- add deployment instructions for production hosting
+
+## Quick Local Run
+
+Backend:
+
+```bash
+cd backend
+.venv\Scripts\activate
+uvicorn main:app --reload --port 8000
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Then open:
+
+- `http://localhost:3000`
