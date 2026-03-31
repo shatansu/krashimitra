@@ -321,18 +321,55 @@ class KrishiAgent:
             return None
 
         system_prompt = SYSTEM_PROMPT_HI if language == "hi" else SYSTEM_PROMPT_EN
+
+        # Build a detailed, context-rich prompt
+        image_instruction = ""
+        if has_image and image_analysis:
+            image_instruction = (
+                "\n\n## IMAGE ANALYSIS TASK\n"
+                "A crop image has been provided. You MUST:\n"
+                "1. Carefully examine the image for disease symptoms (spots, discoloration, wilting, fungal growth, pest damage)\n"
+                "2. Identify the specific disease or pest by name\n"
+                "3. Recommend EXACT treatment: pesticide/fungicide name, dose per acre, dose per litre of water\n"
+                "4. If uncertain, list top 2-3 possible diseases with treatment for each\n"
+                "5. DO NOT just say 'consult an expert' — analyze the image and give your best diagnosis\n"
+                f"Local image model detected: {json.dumps(image_analysis, ensure_ascii=False)}\n"
+            )
+
+        weather_data = tool_context.get("weather", {})
+        weather_instruction = ""
+        if weather_data and weather_data.get("current"):
+            current = weather_data["current"]
+            weather_instruction = (
+                f"\n\nCurrent weather at {location}: "
+                f"Temperature {current.get('temperature_c', 'N/A')}°C, "
+                f"Humidity {current.get('humidity_percent', 'N/A')}%, "
+                f"Wind {current.get('wind_speed_kmh', 'N/A')} km/h, "
+                f"Conditions: {current.get('description', 'N/A')}. "
+                "Use this for spray timing advice."
+            )
+
         prompt = (
-            "Use the provided tool outputs to answer the farmer. "
-            "Respond ONLY in strict JSON with keys: advisory, advisory_hindi, action_steps, confidence. "
-            "Do not invent data. Use only what is provided.\n\n"
-            f"Requested language code: {language}\n"
-            "Write the advisory and action_steps in the requested language. If the requested language is not English, do not answer in English. "
+            f"## FARMER'S QUESTION\n"
+            f"Language: {language}\n"
             f"Location: {location}\n"
             f"Crop: {crop}\n"
-            f"Farmer query: {query}\n"
-            f"Has image: {has_image}\n"
-            f"Image analysis: {json.dumps(image_analysis or {}, ensure_ascii=False)}\n"
-            f"Tool data: {json.dumps(tool_context, ensure_ascii=False)}"
+            f"Query: {query}\n"
+            f"{image_instruction}"
+            f"{weather_instruction}\n\n"
+            f"## AVAILABLE DATA\n"
+            f"{json.dumps(tool_context, ensure_ascii=False)}\n\n"
+            "## RESPONSE INSTRUCTIONS\n"
+            "Respond in strict JSON with keys: advisory, advisory_hindi, action_steps, confidence.\n"
+            f"Write advisory and action_steps in {'Hindi' if language == 'hi' else 'the requested language'}.\n"
+            "IMPORTANT RULES:\n"
+            "- Give SPECIFIC advice with exact product names and dosages\n"
+            "- Include at least 4-5 detailed action steps\n"
+            "- Use the weather data for spray timing recommendations\n"
+            "- Use the mandi data for market advice\n"
+            "- If an image is provided, your PRIMARY task is to diagnose the disease/pest from it\n"
+            "- NEVER say only 'consult an expert' — always provide your analysis first\n"
+            "- For pesticides, mention: name, dose/acre, dose/litre water, PHI days, safety gear\n"
         )
 
         try:
