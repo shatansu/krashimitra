@@ -1,5 +1,6 @@
 import httpx
 import os
+import hashlib
 from datetime import datetime, timedelta
 import random
 
@@ -171,5 +172,9 @@ class MandiService:
             "maize": 2150, "groundnut": 6900, "sugarcane": 355,
         }.get(crop, 3000)
 
-        history = [base + random.randint(-120, 120) for _ in range(7)]
+        # Seed by crop + today's date so prices are deterministic within a day
+        seed_str = f"{crop}:{datetime.now().strftime('%Y-%m-%d')}"
+        seed = int(hashlib.md5(seed_str.encode()).hexdigest(), 16) % (2**32)
+        rng = random.Random(seed)
+        history = [base + rng.randint(-120, 120) for _ in range(7)]
         return self._build_price_response(crop, location, history[-1], history, msp, live=False)

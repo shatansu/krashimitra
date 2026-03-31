@@ -116,6 +116,23 @@ class WeatherService:
         location_lower = location.lower().split(",")[0].strip()
         if location_lower in INDIA_DISTRICTS:
             return INDIA_DISTRICTS[location_lower]
+
+        # Try OWM Geocoding API for unknown locations
+        if OWM_API_KEY:
+            try:
+                import httpx as _httpx
+                resp = _httpx.get(
+                    "https://api.openweathermap.org/geo/1.0/direct",
+                    params={"q": f"{location},IN", "limit": 1, "appid": OWM_API_KEY},
+                    timeout=5,
+                )
+                data = resp.json()
+                if data and isinstance(data, list) and len(data) > 0:
+                    return {"lat": data[0]["lat"], "lon": data[0]["lon"]}
+            except Exception:
+                pass
+
+        # Fallback to Rewa if everything else fails
         return {"lat": 24.5355, "lon": 81.2997}
 
     def _mock_weather(self, location: str) -> dict:

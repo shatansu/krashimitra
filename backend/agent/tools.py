@@ -1,14 +1,27 @@
-from services.weather import WeatherService
-from services.mandi import MandiService
-from services.soil import SoilService
-from services.schemes import SchemesService
-from compliance.pesticide_db import PesticideDatabase
+# Services are lazily imported and instantiated to avoid CLIP model
+# download on server startup (image_inspection depends on transformers/torch).
+_service_instances = {}
 
-weather_svc = WeatherService()
-mandi_svc = MandiService()
-soil_svc = SoilService()
-schemes_svc = SchemesService()
-pesticide_db = PesticideDatabase()
+
+def _get_service(name: str):
+    """Lazy-load and cache service instances."""
+    if name not in _service_instances:
+        if name == "weather":
+            from services.weather import WeatherService
+            _service_instances[name] = WeatherService()
+        elif name == "mandi":
+            from services.mandi import MandiService
+            _service_instances[name] = MandiService()
+        elif name == "soil":
+            from services.soil import SoilService
+            _service_instances[name] = SoilService()
+        elif name == "schemes":
+            from services.schemes import SchemesService
+            _service_instances[name] = SchemesService()
+        elif name == "pesticide":
+            from compliance.pesticide_db import PesticideDatabase
+            _service_instances[name] = PesticideDatabase()
+    return _service_instances[name]
 
 TOOL_DEFINITIONS = [
     {
@@ -148,20 +161,20 @@ async def execute_tool(tool_name: str, tool_input: dict) -> dict:
     """Route tool calls to appropriate service."""
     try:
         if tool_name == "get_weather":
-            return await weather_svc.get_weather(
+            return await _get_service("weather").get_weather(
                 location=tool_input.get("location", "Rewa"),
                 include_forecast=tool_input.get("include_forecast", True),
             )
 
         elif tool_name == "get_mandi_prices":
-            return await mandi_svc.get_prices(
+            return await _get_service("mandi").get_prices(
                 crop=tool_input.get("crop"),
                 location=tool_input.get("location", "Rewa"),
                 state=tool_input.get("state", "Madhya Pradesh"),
             )
 
         elif tool_name == "analyze_soil":
-            return soil_svc.analyze(
+            return _get_service("soil").analyze(
                 nitrogen=tool_input.get("nitrogen"),
                 phosphorus=tool_input.get("phosphorus"),
                 potassium=tool_input.get("potassium"),
@@ -172,14 +185,14 @@ async def execute_tool(tool_name: str, tool_input: dict) -> dict:
             )
 
         elif tool_name == "check_pesticide_safety":
-            return pesticide_db.check(
+            return _get_service("pesticide").check(
                 pesticide_name=tool_input.get("pesticide_name"),
                 crop=tool_input.get("crop"),
                 pest_target=tool_input.get("pest_target"),
             )
 
         elif tool_name == "get_govt_schemes":
-            return schemes_svc.get_schemes(
+            return _get_service("schemes").get_schemes(
                 state=tool_input.get("state", "Madhya Pradesh"),
                 land_holding_acres=tool_input.get("land_holding_acres"),
                 crop=tool_input.get("crop"),
@@ -187,7 +200,7 @@ async def execute_tool(tool_name: str, tool_input: dict) -> dict:
             )
 
         elif tool_name == "get_crop_calendar":
-            return soil_svc.get_crop_calendar(
+            return _get_service("soil").get_crop_calendar(
                 crop=tool_input.get("crop"),
                 region=tool_input.get("region", "Rewa"),
                 season=tool_input.get("season", "rabi"),
@@ -197,4 +210,4 @@ async def execute_tool(tool_name: str, tool_input: dict) -> dict:
             return {"error": f"Unknown tool: {tool_name}"}
 
     except Exception as e:
-        return {"error": str(e), "tool": tool_name}
+        return {"error": str(e), "tool": tool_name}

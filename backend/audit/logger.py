@@ -16,6 +16,23 @@ class AuditLogger:
 
     def __init__(self):
         self._sessions: dict = {}
+        self._hydrate_from_disk()
+
+    def _hydrate_from_disk(self):
+        """Load existing audit sessions from disk so they survive server restarts."""
+        try:
+            for filename in os.listdir(AUDIT_DIR):
+                if not filename.endswith(".json"):
+                    continue
+                session_id = filename[:-5]
+                path = os.path.join(AUDIT_DIR, filename)
+                try:
+                    with open(path, encoding="utf-8") as f:
+                        self._sessions[session_id] = json.load(f)
+                except (json.JSONDecodeError, OSError):
+                    continue
+        except OSError:
+            pass
 
     def start_session(self, session_id: str, input_data: dict):
         self._sessions[session_id] = {

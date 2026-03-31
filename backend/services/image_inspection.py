@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import base64
 import os
@@ -85,7 +85,7 @@ class OpenSourceImageInspector:
                 is_crop_image=True,
             )
 
-        classifier = self._get_zero_shot_classifier()
+        classifier = self._get_zero_shot_classifier(self.model_name, self.cache_dir)
         if classifier is None:
             return self._build_invalid_response(
                 reason="Open-source image model is not available locally.",
@@ -167,14 +167,12 @@ class OpenSourceImageInspector:
 
     @staticmethod
     @lru_cache(maxsize=1)
-    def _get_zero_shot_classifier():
+    def _get_zero_shot_classifier(model_name: str = "openai/clip-vit-base-patch32", cache_dir: str = None):
         try:
             from transformers import pipeline
         except Exception:
             return None
 
-        model_name = os.environ.get("IMAGE_INSPECTOR_MODEL", "openai/clip-vit-base-patch32")
-        cache_dir = os.environ.get("IMAGE_INSPECTOR_CACHE_DIR", "") or None
         try:
             return pipeline(
                 task="zero-shot-image-classification",

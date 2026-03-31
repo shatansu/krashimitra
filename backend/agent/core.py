@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import base64
 import json
@@ -336,10 +336,14 @@ class KrishiAgent:
         )
 
         try:
+            gen_config = {
+                "max_output_tokens": 4096,
+                "response_mime_type": "application/json",
+            }
             model = self.client.GenerativeModel(
                 model_name=self.model_name,
                 system_instruction=system_prompt,
-                generation_config={"max_output_tokens": 1400},
+                generation_config=gen_config,
             )
 
             parts: list[Any] = []
@@ -356,9 +360,16 @@ class KrishiAgent:
 
             response = model.generate_content(parts)
             raw_text = (response.text or "").strip()
+
+            if not raw_text:
+                print("[KrishiAgent] Gemini returned empty response")
+                return None
+
             parsed = self._parse_json_response(raw_text)
 
             if not parsed:
+                # If JSON parsing fails, use the raw text directly as advisory
+                print(f"[KrishiAgent] JSON parse failed, raw length={len(raw_text)}, first 200={raw_text[:200]}")
                 return {
                     "advisory": raw_text,
                     "advisory_hindi": raw_text,
@@ -374,7 +385,7 @@ class KrishiAgent:
                 "confidence_score": self._confidence_to_score(confidence),
             }
         except Exception as exc:
-            print(f"[KrishiAgent] Gemini summary error: {exc}")
+            print(f"[KrishiAgent] Gemini summary error: {type(exc).__name__}: {exc}")
             return None
 
     def _build_rule_based_advisory(
@@ -503,7 +514,7 @@ class KrishiAgent:
                 "Respond in plain text only. Never return JSON, code blocks, markdown fences, or schema text. "
                 "Keep answers practical, easy to understand, and focused on the user's question."
             ),
-            generation_config={"max_output_tokens": 1200},
+            generation_config={"max_output_tokens": 2048},
         )
 
         response = model.generate_content(support_prompt)
@@ -667,12 +678,6 @@ class KrishiAgent:
         if "zaid" in query_lower:
             return "zaid"
         return "rabi"
-
-
-
-
-
-
 
 
 

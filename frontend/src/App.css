@@ -23,6 +23,17 @@
   --radius: 10px;
   --radius-sm: 6px;
   --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+  /* Semantic aliases used by ComplianceBadge and AuditTrail */
+  --color-background-success: var(--green-50);
+  --color-text-success: var(--green-600);
+  --color-border-success: var(--green-400);
+  --color-background-warning: var(--amber-50);
+  --color-text-warning: var(--amber-600);
+  --color-border-warning: var(--amber-400);
+  --color-background-danger: var(--red-50);
+  --color-text-danger: var(--red-600);
+  --color-border-danger: var(--red-400);
 }
 
 body {
@@ -301,7 +312,7 @@ body {
 
 .advisory-header {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 14px 18px; border-bottom: 1px solid #eeecе5;
+  padding: 14px 18px; border-bottom: 1px solid #eeece5;
   background: var(--green-50);
 }
 .advisory-title { display: flex; align-items: center; gap: 8px; }
